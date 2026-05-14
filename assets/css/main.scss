@@ -341,9 +341,15 @@ div.highlight {
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   margin: 1.5em 0 !important;
-  overflow-x: auto !important;
+  overflow-x: scroll !important;
   box-shadow: none !important;
 }
+
+/* Always-visible styled scrollbar for code blocks */
+div.highlight::-webkit-scrollbar { height: 6px; }
+div.highlight::-webkit-scrollbar-track { background: var(--bg-primary); border-radius: 0 0 var(--radius) var(--radius); }
+div.highlight::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+div.highlight::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
 /* Rouge generates a table when line_numbers:true — prevent our global
    table{width:100%} from locking it to the container width */
