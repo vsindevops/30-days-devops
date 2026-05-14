@@ -1,0 +1,83 @@
+remote_theme: mmistakes/minimal-mistakes@4.26.2
+
+title: "30 Days of DevOps"
+subtitle: "From Zero to Production-Ready"
+description: "A hands-on, day-by-day journey through the tools, practices, and culture of modern DevOps engineering."
+url: "https://vsindevops.github.io"
+baseurl: "/30-days-devops"
+repository: "vsindevops/30-days-devops"
+
+author:
+  name: "vsindevops"
+  bio: "DevOps Engineer | Sharing knowledge one day at a time."
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/vsindevops"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+permalink: /articles/:year/:month/:day/:title/
+
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: true
+
+# Plugins (GitHub Pages whitelisted)
+plugins:
+  - jekyll-remote-theme
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-feed
+  - jekyll-include-cache
+
+# Pagination
+paginate: 10
+paginate_path: /page:num/
+
+# Theme settings
+minimal_mistakes_skin: "dark"
+
+# Site-wide defaults
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: false
+      share: true
+      related: true
+      toc: true
+      toc_sticky: true
+      toc_label: "On this page"
+  - scope:
+      path: "_pages"
+      type: pages
+    values:
+      layout: single
+      author_profile: true
+
+# Collections
+category_archive:
+  type: liquid
+  path: /categories/
+tag_archive:
+  type: liquid
+  path: /tags/
+
+# Exclude from build
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - "*.gem"
+  - vendor
+  - .bundle
+  - .sass-cache
