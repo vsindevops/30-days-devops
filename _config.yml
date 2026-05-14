@@ -14,6 +14,9 @@ author:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/vsindevops"
+    - label: "X / Twitter"
+      icon: "fab fa-fw fa-x-twitter"
+      url: "https://x.com/syssignals"
 
 # Build settings
 markdown: kramdown
