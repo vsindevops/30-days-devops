@@ -61,6 +61,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   document.querySelectorAll('div.highlight').forEach(function (block) {
+    // Skip Mermaid diagram blocks (no pre inside after conversion)
+    var pre = block.querySelector('pre');
+    if (!pre) return;
+
     var btn = document.createElement('button');
     btn.className = 'copy-btn';
     btn.setAttribute('aria-label', 'Copy code to clipboard');
@@ -68,9 +72,8 @@ document.addEventListener('DOMContentLoaded', function () {
     block.appendChild(btn);
 
     btn.addEventListener('click', function () {
-      // Get code element — strip leading/trailing whitespace
-      var codeEl = block.querySelector('pre code') || block.querySelector('pre');
-      var text = (codeEl ? codeEl.textContent : '').replace(/\n$/, '');
+      var codeEl = block.querySelector('pre code') || pre;
+      var text = codeEl.textContent.replace(/\n$/, '');
       copyText(text, btn);
     });
   });
