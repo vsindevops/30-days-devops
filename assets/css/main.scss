@@ -236,6 +236,40 @@ h3.archive__subtitle {
   margin-bottom: 1.2em;
 }
 
+/* --- Article layout: maximise content width ------------------------- */
+
+/* Full-width wrapper — no left author sidebar on articles */
+.layout--single #main {
+  max-width: 1100px !important;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+}
+
+/* Content takes all available space except the TOC */
+.layout--single .page {
+  width: 100% !important;
+  float: none !important;
+  padding-right: 0 !important;
+}
+
+/* Narrow the sticky TOC to free up reading space */
+.sidebar__right.sticky {
+  width: 200px !important;
+  min-width: 200px !important;
+  margin-left: 1.5em !important;
+}
+
+/* Ensure content fills the space next to the TOC */
+@media (min-width: 64em) {
+  .layout--single .page__content,
+  .layout--single .page__meta,
+  .layout--single .page__share,
+  .layout--single .page__comments {
+    float: none !important;
+    width: 100% !important;
+  }
+}
+
 /* --- Article page --------------------------------------------------- */
 .page__title {
   font-size: 1.9em !important;
