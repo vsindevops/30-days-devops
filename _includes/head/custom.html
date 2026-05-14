@@ -8,13 +8,12 @@
       flowchart: { useMaxWidth: true, htmlLabels: true }
     });
 
-    document.querySelectorAll('div.highlight').forEach(function (wrapper) {
-      var code = wrapper.querySelector('code.language-mermaid');
-      if (!code) return;
+    // Mermaid blocks have no Rouge wrapper — they render as bare <pre><code>
+    document.querySelectorAll('code.language-mermaid').forEach(function (code) {
       var div = document.createElement('div');
       div.className = 'mermaid';
       div.textContent = code.textContent;
-      wrapper.replaceWith(div);
+      code.parentElement.replaceWith(div);
     });
 
     mermaid.run();
