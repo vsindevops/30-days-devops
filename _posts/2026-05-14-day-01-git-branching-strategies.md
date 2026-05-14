@@ -76,6 +76,35 @@ release/*     ← release stabilization. Branches off develop.
 hotfix/*      ← emergency fixes. Branches off main.
 ```
 
+```mermaid
+gitGraph
+   commit id: "v0.9.0" tag: "v0.9.0"
+   branch develop
+   checkout develop
+   commit id: "dev base"
+   branch feature/auth
+   checkout feature/auth
+   commit id: "auth: scaffold"
+   commit id: "auth: tests"
+   checkout develop
+   merge feature/auth id: "merge auth"
+   branch release/1.0.0
+   checkout release/1.0.0
+   commit id: "chore: bump 1.0.0"
+   checkout main
+   merge release/1.0.0 id: "release" tag: "v1.0.0"
+   checkout develop
+   merge release/1.0.0
+   checkout main
+   branch hotfix/1.0.1
+   checkout hotfix/1.0.1
+   commit id: "fix: null crash"
+   checkout main
+   merge hotfix/1.0.1 id: "hotfix" tag: "v1.0.1"
+   checkout develop
+   merge hotfix/1.0.1
+```
+
 **Lifecycle of a feature:**
 
 ```bash
@@ -125,6 +154,21 @@ main          ← the trunk. Always deployable. CI runs on every commit.
 feature/*     ← optional. Max lifetime: 2 days. Merged via PR.
 ```
 
+```mermaid
+gitGraph
+   commit id: "feat: login"
+   commit id: "fix: auth bug"
+   branch feature/dashboard
+   checkout feature/dashboard
+   commit id: "dashboard WIP"
+   checkout main
+   commit id: "chore: update deps"
+   merge feature/dashboard id: "dashboard [flag off]"
+   commit id: "feat: search"
+   commit id: "perf: cache layer"
+   commit id: "v1.1.0" tag: "v1.1.0"
+```
+
 **The key practices that make TBD work:**
 
 1. **Feature flags** — incomplete features are deployed but hidden behind a flag
@@ -143,6 +187,26 @@ feature/*     ← optional. Max lifetime: 2 days. Merged via PR.
 - Low test coverage (broken main blocks everyone)
 - Large distributed teams without feature flag infrastructure
 - Compliance requirements that mandate release gates
+
+---
+
+### Which one should you choose?
+
+```mermaid
+flowchart TD
+    A([Start: pick a strategy]) --> B{Multiple versions\nin prod simultaneously?}
+    B -->|Yes| C[GitFlow]
+    B -->|No| D{Deploying multiple\ntimes per day?}
+    D -->|Yes| E[Trunk-Based Dev]
+    D -->|No| F{Test coverage\nabove 80%?}
+    F -->|Yes| E
+    F -->|No| G{Regulated industry\nor formal QA gate?}
+    G -->|Yes| C
+    G -->|No| H[TBD + set a\ncoverage target]
+    style C fill:#2d5a1b,color:#fff
+    style E fill:#1b3a5a,color:#fff
+    style H fill:#1b3a5a,color:#fff
+```
 
 ---
 
@@ -388,6 +452,24 @@ EOF
 chmod +x .husky/pre-commit
 ```
 
+Here's what happens on every `git commit` with this setup:
+
+```mermaid
+flowchart LR
+    A([git commit]) --> B[pre-commit\nhook]
+    B --> C{lint-staged\npasses?}
+    C -->|Fail| D([Blocked\nfix lint errors])
+    C -->|Pass| E[commit-msg\nhook]
+    E --> F{commitlint\npasses?}
+    F -->|Fail| G([Blocked\nfix message format])
+    F -->|Pass| H([Commit created])
+    H --> I([git push])
+    I --> J[pre-push\nhook]
+    J --> K{Protected\nbranch?}
+    K -->|Yes| L([Blocked\nopen a PR instead])
+    K -->|No| M([Push succeeds])
+```
+
 ### Step 7: Create the PR template
 
 ```bash
@@ -525,6 +607,20 @@ jobs:
       - name: Run tests
         run: npm test --if-present
 EOF
+```
+
+Every PR triggers this pipeline before anyone can merge:
+
+```mermaid
+flowchart LR
+    A([PR opened]) --> B[lint]
+    A --> C[commitlint]
+    B --> D[test]
+    C --> E{All checks\npassed?}
+    D --> E
+    E -->|No| F([PR blocked])
+    E -->|Yes| G([Awaiting\nreview])
+    G --> H([Merged to main])
 ```
 
 ---
