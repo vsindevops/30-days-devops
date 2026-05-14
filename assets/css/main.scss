@@ -336,24 +336,16 @@ code, pre, kbd, samp {
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace !important;
 }
 
-/* Code block container */
+/* Code block container — visual shell only, no overflow */
 div.highlight {
   background: var(--code-bg) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   margin: 1.5em 0 !important;
-  overflow-x: scroll !important;
   box-shadow: none !important;
 }
 
-/* Always-visible scrollbar at bottom of code blocks */
-div.highlight::-webkit-scrollbar        { height: 6px; }
-div.highlight::-webkit-scrollbar-track  { background: var(--bg-primary); border-radius: 0 0 var(--radius) var(--radius); }
-div.highlight::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 3px; }
-div.highlight::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
-
-/* Without line_numbers, structure is: div.highlight > pre.highlight > code
-   pre is the direct scroll child — keep it simple */
+/* pre is the scroll container — direct parent of code content */
 div.highlight pre {
   background: transparent !important;
   margin: 0 !important;
@@ -361,8 +353,28 @@ div.highlight pre {
   font-size: 0.875rem !important;
   line-height: 1.7 !important;
   border: none !important;
+  /* scroll lives here — pre is the direct parent of wide content */
+  overflow-x: scroll !important;
+  overflow-y: visible !important;
+  /* defeat the theme's pre{white-space:pre-wrap !important} */
   white-space: pre !important;
   word-break: normal !important;
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
+}
+
+/* Scrollbar on pre */
+div.highlight pre::-webkit-scrollbar        { height: 6px; }
+div.highlight pre::-webkit-scrollbar-track  { background: var(--bg-primary); }
+div.highlight pre::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 3px; }
+div.highlight pre::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* Force whitespace through code and every syntax-highlight span */
+div.highlight pre code,
+div.highlight pre code span {
+  white-space: inherit !important;
+  word-break: normal !important;
+  word-wrap: normal !important;
   overflow-wrap: normal !important;
 }
 
