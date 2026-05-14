@@ -343,6 +343,46 @@ div.highlight {
   border-radius: var(--radius) !important;
   margin: 1.5em 0 !important;
   box-shadow: none !important;
+  position: relative !important;
+}
+
+/* Copy button */
+.copy-btn {
+  position: absolute;
+  top: 0.55em;
+  right: 0.55em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.28em 0.65em;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-secondary);
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
+  z-index: 10;
+  line-height: 1;
+  user-select: none;
+}
+
+div.highlight:hover .copy-btn { opacity: 1; }
+
+.copy-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.copy-btn.copied {
+  background: rgba(63, 185, 80, 0.12);
+  border-color: var(--success);
+  color: var(--success);
+  opacity: 1;
 }
 
 /* pre is the scroll container — direct parent of code content */
