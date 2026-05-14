@@ -1,15 +1,15 @@
 remote_theme: mmistakes/minimal-mistakes@4.26.2
 
-title: "30 Days of DevOps"
-subtitle: "From Zero to Production-Ready"
-description: "A hands-on, day-by-day journey through the tools, practices, and culture of modern DevOps engineering."
+title: "Systems and Signals"
+subtitle: "Project-based engineering. No fluff."
+description: "Systems and Signals publishes hands-on, project-based articles on DevOps, cloud infrastructure, containers, and platform engineering. Every article ships working code."
 url: "https://vsindevops.github.io"
 baseurl: "/30-days-devops"
 repository: "vsindevops/30-days-devops"
 
 author:
   name: "Vishwas Sharma"
-  bio: "DevOps Engineer with hands-on experience in cloud infrastructure, containers, and CI/CD. Writing this series to share what actually works in production — no filler, no theory without practice."
+  bio: "DevOps Engineer. I write project-based articles on infrastructure, containers, and CI/CD — the kind of content I wished existed when I was learning."
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"

@@ -5,32 +5,43 @@ layout: single
 author_profile: true
 ---
 
-## Hi, I'm Vishwas Sharma
+## Systems and Signals
 
-I'm a DevOps Engineer with hands-on experience building and operating cloud infrastructure, container platforms, and CI/CD pipelines. I've worked across the stack — from writing Dockerfiles and Kubernetes manifests to setting up Terraform modules and wiring up observability with Prometheus and Grafana.
+Systems and Signals is a technical publication by **Vishwas Sharma** focused on project-based DevOps and platform engineering. Every article here builds something real — no isolated theory, no contrived examples that fall apart the moment you try them outside a tutorial.
 
-I started this series because most DevOps content online falls into one of two traps: it's either too shallow to be useful, or it assumes you already know everything. The **30 Days of DevOps** series is my attempt to fix that — practical, progressive, and built around real workflows that engineers actually use.
+The name reflects the philosophy: *systems* are what you build, *signals* are what tell you they're working.
 
-Every article in this series comes with verified commands, real configs, and the kind of context that helps you understand *why* something works, not just *how* to copy-paste it.
+---
 
-## What I work with
+## About the author
 
-- **Cloud** — AWS, GCP
-- **Containers** — Docker, Kubernetes, Helm
-- **CI/CD** — GitHub Actions, Jenkins, ArgoCD
-- **IaC** — Terraform, Ansible
-- **Observability** — Prometheus, Grafana, ELK Stack
-- **Scripting** — Bash, Python
+I'm a DevOps Engineer with hands-on experience across cloud infrastructure, container platforms, and CI/CD pipelines. I've worked with AWS and GCP, built Kubernetes clusters, written Terraform modules, and wired up monitoring stacks from scratch.
 
-## About this series
+I started this publication because the content I wanted when I was learning didn't exist — practical, complete, and honest about the rough edges. That's what I'm building here.
 
-**30 Days of DevOps** is a structured, day-by-day guide that takes you from foundational concepts to production-grade systems. Each article builds on the last — by Day 30, you'll have touched every major area of the modern DevOps toolchain.
+**Stack I work with:**
 
-The series is written for:
-- Developers stepping into platform and infrastructure work
-- Sysadmins moving toward cloud-native and DevOps
-- Students and early-career engineers preparing for DevOps roles
+| Area | Tools |
+|---|---|
+| Cloud | AWS, GCP |
+| Containers | Docker, Kubernetes, Helm |
+| CI/CD | GitHub Actions, Jenkins, ArgoCD |
+| IaC | Terraform, Ansible |
+| Observability | Prometheus, Grafana, ELK Stack |
+| Scripting | Bash, Python |
+
+---
+
+## Current series
+
+### 30 Days of DevOps
+A 30-day, project-based program covering the full DevOps toolchain — from Git workflows and Docker to Kubernetes, Terraform, and production observability. Built for engineers who learn by doing.
+
+[Start reading →](/articles/)
+
+---
 
 ## Get in touch
 
-Find me on [GitHub](https://github.com/vsindevops) or follow the series on [X / Twitter](https://x.com/syssignals) where I post when new articles drop.
+- GitHub: [vsindevops](https://github.com/vsindevops)
+- X / Twitter: [@syssignals](https://x.com/syssignals)
