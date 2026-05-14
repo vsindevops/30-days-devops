@@ -1,29 +1,36 @@
 ---
-title: "About This Series"
+title: "About"
 permalink: /about/
 layout: single
 author_profile: true
 ---
 
-## 30 Days of DevOps
+## Hi, I'm Vishwas Sharma
 
-This series is a structured, day-by-day guide to mastering modern DevOps engineering. Each article is focused, practical, and built around real tools used in production environments.
+I'm a DevOps Engineer with hands-on experience building and operating cloud infrastructure, container platforms, and CI/CD pipelines. I've worked across the stack — from writing Dockerfiles and Kubernetes manifests to setting up Terraform modules and wiring up observability with Prometheus and Grafana.
 
-### What You'll Learn
+I started this series because most DevOps content online falls into one of two traps: it's either too shallow to be useful, or it assumes you already know everything. The **30 Days of DevOps** series is my attempt to fix that — practical, progressive, and built around real workflows that engineers actually use.
 
-- **Foundations** — What DevOps is, why it matters, and how teams adopt it
-- **Version Control & Branching** — Git workflows used by engineering teams
-- **CI/CD Pipelines** — Building automated build, test, and deploy pipelines
-- **Containers & Docker** — Packaging and running applications reliably
-- **Kubernetes** — Orchestrating containerized workloads at scale
-- **Infrastructure as Code** — Terraform, Ansible, and declarative infrastructure
-- **Monitoring & Observability** — Prometheus, Grafana, logging, and alerting
-- **Security in DevOps** — Secrets management, scanning, and hardening
+Every article in this series comes with verified commands, real configs, and the kind of context that helps you understand *why* something works, not just *how* to copy-paste it.
 
-### Who This Is For
+## What I work with
 
-Whether you're a developer stepping into platform work, a sysadmin transitioning to cloud-native, or a student preparing for a DevOps role — this series meets you where you are.
+- **Cloud** — AWS, GCP
+- **Containers** — Docker, Kubernetes, Helm
+- **CI/CD** — GitHub Actions, Jenkins, ArgoCD
+- **IaC** — Terraform, Ansible
+- **Observability** — Prometheus, Grafana, ELK Stack
+- **Scripting** — Bash, Python
 
-### About the Author
+## About this series
 
-**vsindevops** — DevOps engineer focused on practical, no-fluff content. All examples in this series are drawn from real workflows.
+**30 Days of DevOps** is a structured, day-by-day guide that takes you from foundational concepts to production-grade systems. Each article builds on the last — by Day 30, you'll have touched every major area of the modern DevOps toolchain.
+
+The series is written for:
+- Developers stepping into platform and infrastructure work
+- Sysadmins moving toward cloud-native and DevOps
+- Students and early-career engineers preparing for DevOps roles
+
+## Get in touch
+
+Find me on [GitHub](https://github.com/vsindevops) or follow the series on [X / Twitter](https://x.com/syssignals) where I post when new articles drop.

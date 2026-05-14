@@ -8,8 +8,8 @@ baseurl: "/30-days-devops"
 repository: "vsindevops/30-days-devops"
 
 author:
-  name: "vsindevops"
-  bio: "DevOps Engineer. Sharing knowledge one day at a time."
+  name: "Vishwas Sharma"
+  bio: "DevOps Engineer with hands-on experience in cloud infrastructure, containers, and CI/CD. Writing this series to share what actually works in production — no filler, no theory without practice."
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
