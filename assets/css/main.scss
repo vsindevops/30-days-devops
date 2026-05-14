@@ -336,28 +336,49 @@ code, pre, kbd, samp {
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace !important;
 }
 
+/* Outer wrapper Jekyll adds around every code block */
+.highlighter-rouge {
+  margin: 1.5em 0;
+  overflow: visible !important;
+}
+
+/* Scroll container — this is where the horizontal scroll lives */
 div.highlight {
   background: var(--code-bg) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
-  margin: 1.5em 0 !important;
   overflow-x: scroll !important;
+  overflow-y: visible !important;
   box-shadow: none !important;
 }
 
-/* Always-visible styled scrollbar for code blocks */
-div.highlight::-webkit-scrollbar { height: 6px; }
-div.highlight::-webkit-scrollbar-track { background: var(--bg-primary); border-radius: 0 0 var(--radius) var(--radius); }
-div.highlight::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* Always-visible styled scrollbar */
+div.highlight::-webkit-scrollbar        { height: 6px; }
+div.highlight::-webkit-scrollbar-track  { background: var(--bg-primary); border-radius: 0 0 var(--radius) var(--radius); }
+div.highlight::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 3px; }
 div.highlight::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
-/* Rouge generates a table when line_numbers:true — prevent our global
-   table{width:100%} from locking it to the container width */
+/* pre.highlight wraps code>table — strip it, no padding, no overflow */
+div.highlight > pre.highlight {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+div.highlight > pre.highlight > code {
+  display: block !important;
+}
+
+/* Rouge table — let it grow as wide as the code inside */
 div.highlight table {
   width: auto !important;
   min-width: 100% !important;
   border: none !important;
   margin: 0 !important;
+  border-collapse: collapse !important;
   border-radius: 0 !important;
 }
 
@@ -365,10 +386,26 @@ div.highlight td {
   padding: 0 !important;
   border: none !important;
   background: transparent !important;
+  vertical-align: top !important;
 }
 
-div.highlight pre {
+/* Line number column */
+div.highlight td.rouge-gutter pre {
+  padding: 1em 0.8em 1em 1em !important;
+  margin: 0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.7 !important;
+  border-right: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+  user-select: none !important;
+  opacity: 0.45 !important;
+  white-space: pre !important;
+  overflow: visible !important;
   background: transparent !important;
+}
+
+/* Code column */
+div.highlight td.rouge-code pre {
   padding: 1em 1.25em !important;
   margin: 0 !important;
   font-size: 0.875rem !important;
@@ -376,6 +413,7 @@ div.highlight pre {
   border: none !important;
   overflow: visible !important;
   white-space: pre !important;
+  background: transparent !important;
 }
 
 /* Inline code */
@@ -389,15 +427,6 @@ p code, li code, td code {
   color: var(--inline-code) !important;
 }
 
-/* Line numbers */
-.highlight .gl {
-  color: var(--text-secondary);
-  border-right: 1px solid var(--border);
-  padding-right: 0.9em;
-  margin-right: 0.8em;
-  user-select: none;
-  opacity: 0.45;
-}
 
 /* --- Tables --------------------------------------------------------- */
 .page__content table {
