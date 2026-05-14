@@ -1,0 +1,507 @@
+---
+---
+
+@charset "utf-8";
+
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}";
+@import "minimal-mistakes";
+
+/* =====================================================================
+   30 Days of DevOps — Visual Modernization
+   GitHub-style dark palette · Inter typography · Card layouts
+   ===================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+
+/* --- Design tokens -------------------------------------------------- */
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-tertiary:   #1c2128;
+  --border:        #30363d;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --accent:        #58a6ff;
+  --accent-dim:    rgba(88, 166, 255, 0.1);
+  --code-bg:       #161b22;
+  --inline-code:   #f0883e;
+  --radius:        8px;
+  --radius-sm:     5px;
+}
+
+/* --- Base ----------------------------------------------------------- */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--accent); }
+a:hover { color: #79b8ff; text-decoration: none; }
+
+/* --- Navigation ----------------------------------------------------- */
+.masthead {
+  background: rgba(13, 17, 23, 0.96) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.masthead__inner-wrap {
+  padding-top: 0.65em;
+  padding-bottom: 0.65em;
+}
+
+.greedy-nav { background: transparent !important; }
+
+.site-title {
+  font-weight: 700 !important;
+  font-size: 1.05em !important;
+  letter-spacing: -0.02em;
+  color: var(--text-primary) !important;
+}
+
+.site-subtitle {
+  font-size: 0.7em !important;
+  color: var(--text-secondary) !important;
+  font-weight: 400;
+}
+
+.greedy-nav a,
+.greedy-nav .visible-links a {
+  color: var(--text-secondary) !important;
+  font-size: 0.84em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: color 0.15s;
+}
+
+.greedy-nav .visible-links a::before { display: none; }
+
+.greedy-nav .visible-links a:hover {
+  color: var(--accent) !important;
+  background: transparent !important;
+}
+
+/* --- Hero ----------------------------------------------------------- */
+.page__hero--overlay {
+  background-color: var(--bg-primary) !important;
+  border-bottom: 1px solid var(--border);
+  padding: 5em 0 4em;
+  min-height: 0 !important;
+}
+
+.page__hero--overlay .wrapper { max-width: 740px; }
+
+.page__hero--overlay .page__title {
+  font-size: 2.6em;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
+}
+
+.page__hero--overlay .page__lead {
+  font-size: 1em;
+  color: var(--text-secondary) !important;
+  max-width: 520px;
+  line-height: 1.75;
+  text-shadow: none !important;
+}
+
+/* --- Author sidebar ------------------------------------------------- */
+.sidebar { background: transparent !important; }
+
+.author__avatar img {
+  border-radius: 50% !important;
+  border: 2px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+.author__content { border-bottom: 1px solid var(--border); padding-bottom: 0.9em; margin-bottom: 0.9em; }
+
+.author__name a {
+  font-weight: 600 !important;
+  font-size: 0.95em !important;
+  color: var(--text-primary) !important;
+}
+
+.author__bio {
+  font-size: 0.8em !important;
+  color: var(--text-secondary) !important;
+  line-height: 1.65 !important;
+  margin-top: 0.4em;
+}
+
+.author__urls-wrapper button.btn {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.78em;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 500;
+  padding: 0.3em 0.85em;
+  transition: all 0.15s;
+  box-shadow: none !important;
+}
+
+.author__urls-wrapper button.btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: var(--accent-dim) !important;
+}
+
+.author__urls {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+  padding: 0.4em 0 !important;
+}
+
+.author__urls li a {
+  font-size: 0.8em;
+  color: var(--text-secondary) !important;
+  padding: 0.4em 1em;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.author__urls li a:hover {
+  color: var(--accent) !important;
+  background: var(--accent-dim) !important;
+}
+
+/* --- Post list / cards --------------------------------------------- */
+.archive { background: transparent !important; }
+
+.list__item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.3em 1.5em;
+  margin-bottom: 1em;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.list__item:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-dim), 0 6px 24px rgba(0,0,0,0.35);
+}
+
+.archive__item { background: transparent; }
+
+.archive__item-title {
+  font-size: 1em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  margin: 0 0 0.4em;
+}
+
+.archive__item-title a {
+  color: var(--text-primary) !important;
+  transition: color 0.15s;
+}
+
+.archive__item-title a:hover { color: var(--accent) !important; }
+
+.archive__item-excerpt {
+  font-size: 0.84em;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.archive__item-teaser img { border-radius: var(--radius); }
+
+/* Recent Posts heading */
+h3.archive__subtitle {
+  font-size: 0.72em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.6em;
+  margin-bottom: 1.2em;
+}
+
+/* --- Article page --------------------------------------------------- */
+.page__title {
+  font-size: 1.9em !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.2 !important;
+  color: var(--text-primary) !important;
+}
+
+.page__content {
+  font-size: 0.975rem;
+  line-height: 1.85;
+  color: var(--text-primary);
+}
+
+.page__content h2 {
+  font-size: 1.35em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 2.8em;
+  padding-bottom: 0.45em;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.page__content h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-top: 2.2em;
+  color: var(--text-primary);
+}
+
+.page__content h4 {
+  font-size: 0.82em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-top: 2em;
+}
+
+.page__content p { margin-bottom: 1.3em; }
+
+.page__content strong { color: var(--text-primary); font-weight: 600; }
+
+.page__content ul li,
+.page__content ol li { margin-bottom: 0.35em; color: var(--text-primary); }
+
+/* --- Code blocks ---------------------------------------------------- */
+code, pre, kbd, samp {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace !important;
+}
+
+div.highlight {
+  background: var(--code-bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  margin: 1.5em 0 !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+
+div.highlight pre {
+  background: transparent !important;
+  padding: 1em 1.2em !important;
+  margin: 0 !important;
+  font-size: 0.83em !important;
+  line-height: 1.7 !important;
+  border: none !important;
+  overflow-x: auto;
+}
+
+/* Inline code */
+code.highlighter-rouge,
+p code, li code, td code {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  padding: 0.1em 0.42em !important;
+  font-size: 0.84em !important;
+  color: var(--inline-code) !important;
+}
+
+/* Line numbers */
+.highlight .gl {
+  color: var(--text-secondary);
+  border-right: 1px solid var(--border);
+  padding-right: 0.9em;
+  margin-right: 0.8em;
+  user-select: none;
+  opacity: 0.45;
+}
+
+/* --- Tables --------------------------------------------------------- */
+.page__content table {
+  width: 100%;
+  font-size: 0.87em;
+  margin: 1.6em 0;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.page__content thead th {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  font-size: 0.82em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.75em 1em;
+  border-bottom: 1px solid var(--border) !important;
+  text-align: left;
+}
+
+.page__content tbody td {
+  padding: 0.7em 1em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5) !important;
+  vertical-align: top;
+}
+
+.page__content tbody tr:last-child td { border-bottom: none !important; }
+
+.page__content tbody tr:hover td {
+  background: rgba(88, 166, 255, 0.04);
+  color: var(--text-primary);
+}
+
+/* --- Blockquotes ---------------------------------------------------- */
+.page__content blockquote {
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 1em 1.4em;
+  margin: 1.6em 0;
+  color: var(--text-secondary);
+  font-size: 0.92em;
+  line-height: 1.72;
+  font-style: normal !important;
+}
+
+.page__content blockquote p { margin: 0; }
+.page__content blockquote strong { color: var(--text-primary); }
+.page__content blockquote a { color: var(--accent); }
+
+/* --- TOC ------------------------------------------------------------ */
+.toc {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  overflow: hidden;
+  font-size: 0.8em;
+}
+
+.nav__title {
+  background: var(--bg-tertiary) !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  font-size: 0.72em !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  color: var(--text-secondary) !important;
+  padding: 0.65em 1em !important;
+}
+
+.toc__menu a {
+  color: var(--text-secondary) !important;
+  font-size: 0.88em;
+  padding: 0.3em 1em !important;
+  display: block;
+  border-left: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1.5;
+}
+
+.toc__menu a:hover {
+  color: var(--accent) !important;
+  border-left-color: var(--accent) !important;
+  background: var(--accent-dim) !important;
+}
+
+.toc__menu ul { margin: 0; padding-left: 1em; }
+
+/* --- Post metadata -------------------------------------------------- */
+.page__meta {
+  font-size: 0.75em !important;
+  color: var(--text-secondary) !important;
+}
+
+.page__meta-sep { color: var(--border); }
+
+.page__taxonomy-item {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 20px !important;
+  font-size: 0.72em !important;
+  padding: 0.18em 0.75em !important;
+  color: var(--text-secondary) !important;
+  transition: all 0.15s;
+  text-decoration: none !important;
+}
+
+.page__taxonomy-item:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: var(--accent-dim) !important;
+}
+
+/* --- Mermaid diagrams ----------------------------------------------- */
+.mermaid {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.8em 1em;
+  margin: 1.6em 0;
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* --- Pagination / prev-next ---------------------------------------- */
+.pagination--pager {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.84em;
+  font-weight: 500;
+  transition: all 0.15s;
+  box-shadow: none !important;
+}
+
+.pagination--pager:hover {
+  background: var(--accent-dim) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+/* --- Related posts -------------------------------------------------- */
+.page__related { border-top: 1px solid var(--border); margin-top: 2em; padding-top: 1.5em; }
+.page__related-title { font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-secondary); }
+
+/* --- Footer --------------------------------------------------------- */
+.page__footer {
+  background: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.76em;
+  margin-top: 0;
+}
+
+.page__footer-copyright { color: var(--text-secondary) !important; }
+
+/* --- Scrollbar ------------------------------------------------------ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* --- Horizontal rules ----------------------------------------------- */
+.page__content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5em 0;
+}
+
+/* --- Selection highlight -------------------------------------------- */
+::selection { background: rgba(88, 166, 255, 0.25); color: var(--text-primary); }
