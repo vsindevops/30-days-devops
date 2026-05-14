@@ -77,30 +77,31 @@ hotfix/*      ← emergency fixes. Branches off main.
 ```
 
 ```mermaid
+%%{init: {'gitGraph': {'rotateCommitLabel': true}}}%%
 gitGraph
-   commit id: "v0.9.0" tag: "v0.9.0"
+   commit id: "init" tag: "v0.9.0"
    branch develop
    checkout develop
-   commit id: "dev base"
+   commit id: "setup"
    branch feature/auth
    checkout feature/auth
-   commit id: "auth: scaffold"
-   commit id: "auth: tests"
+   commit id: "scaffold"
+   commit id: "tests"
    checkout develop
-   merge feature/auth id: "merge auth"
+   merge feature/auth id: "auth merged"
    branch release/1.0.0
    checkout release/1.0.0
-   commit id: "chore: bump 1.0.0"
+   commit id: "bump v1.0.0"
    checkout main
-   merge release/1.0.0 id: "release" tag: "v1.0.0"
+   merge release/1.0.0 tag: "v1.0.0"
    checkout develop
    merge release/1.0.0
    checkout main
    branch hotfix/1.0.1
    checkout hotfix/1.0.1
-   commit id: "fix: null crash"
+   commit id: "null fix"
    checkout main
-   merge hotfix/1.0.1 id: "hotfix" tag: "v1.0.1"
+   merge hotfix/1.0.1 tag: "v1.0.1"
    checkout develop
    merge hotfix/1.0.1
 ```
@@ -155,18 +156,19 @@ feature/*     ← optional. Max lifetime: 2 days. Merged via PR.
 ```
 
 ```mermaid
+%%{init: {'gitGraph': {'rotateCommitLabel': true}}}%%
 gitGraph
    commit id: "feat: login"
-   commit id: "fix: auth bug"
+   commit id: "fix: auth"
    branch feature/dashboard
    checkout feature/dashboard
    commit id: "dashboard WIP"
    checkout main
-   commit id: "chore: update deps"
-   merge feature/dashboard id: "dashboard [flag off]"
+   commit id: "chore: deps"
+   merge feature/dashboard id: "flag: off"
    commit id: "feat: search"
-   commit id: "perf: cache layer"
-   commit id: "v1.1.0" tag: "v1.1.0"
+   commit id: "perf: cache"
+   commit id: "release" tag: "v1.1.0"
 ```
 
 **The key practices that make TBD work:**
@@ -194,15 +196,15 @@ gitGraph
 
 ```mermaid
 flowchart TD
-    A([Start: pick a strategy]) --> B{Multiple versions\nin prod simultaneously?}
-    B -->|Yes| C[GitFlow]
-    B -->|No| D{Deploying multiple\ntimes per day?}
-    D -->|Yes| E[Trunk-Based Dev]
+    A([Start]) --> B{Multiple versions\nin prod?}
+    B -->|Yes| C([GitFlow])
+    B -->|No| D{Deploy multiple\ntimes per day?}
+    D -->|Yes| E([Trunk-Based Dev])
     D -->|No| F{Test coverage\nabove 80%?}
     F -->|Yes| E
-    F -->|No| G{Regulated industry\nor formal QA gate?}
+    F -->|No| G{Regulated or\nformal QA gate?}
     G -->|Yes| C
-    G -->|No| H[TBD + set a\ncoverage target]
+    G -->|No| H([TBD + build\ncoverage first])
     style C fill:#2d5a1b,color:#fff
     style E fill:#1b3a5a,color:#fff
     style H fill:#1b3a5a,color:#fff
@@ -454,20 +456,27 @@ chmod +x .husky/pre-commit
 
 Here's what happens on every `git commit` with this setup:
 
+**On commit:**
+
 ```mermaid
 flowchart LR
-    A([git commit]) --> B[pre-commit\nhook]
+    A([git commit]) --> B[pre-commit hook]
     B --> C{lint-staged\npasses?}
-    C -->|Fail| D([Blocked\nfix lint errors])
-    C -->|Pass| E[commit-msg\nhook]
+    C -->|Fail| D([Blocked — fix lint])
+    C -->|Pass| E[commit-msg hook]
     E --> F{commitlint\npasses?}
-    F -->|Fail| G([Blocked\nfix message format])
+    F -->|Fail| G([Blocked — fix message])
     F -->|Pass| H([Commit created])
-    H --> I([git push])
-    I --> J[pre-push\nhook]
-    J --> K{Protected\nbranch?}
-    K -->|Yes| L([Blocked\nopen a PR instead])
-    K -->|No| M([Push succeeds])
+```
+
+**On push:**
+
+```mermaid
+flowchart LR
+    A([git push]) --> B[pre-push hook]
+    B --> C{Protected\nbranch?}
+    C -->|Yes| D([Blocked — open a PR])
+    C -->|No| E([Push succeeds])
 ```
 
 ### Step 7: Create the PR template
@@ -612,14 +621,15 @@ EOF
 Every PR triggers this pipeline before anyone can merge:
 
 ```mermaid
-flowchart LR
+flowchart TD
     A([PR opened]) --> B[lint]
     A --> C[commitlint]
-    B --> D[test]
-    C --> E{All checks\npassed?}
+    A --> D[test]
+    B --> E{All checks\npassed?}
+    C --> E
     D --> E
     E -->|No| F([PR blocked])
-    E -->|Yes| G([Awaiting\nreview])
+    E -->|Yes| G([Awaiting review])
     G --> H([Merged to main])
 ```
 
