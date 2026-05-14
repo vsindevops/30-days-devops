@@ -9,7 +9,7 @@ repository: "vsindevops/30-days-devops"
 
 author:
   name: "vsindevops"
-  bio: "DevOps Engineer | Sharing knowledge one day at a time."
+  bio: "DevOps Engineer. Sharing knowledge one day at a time."
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
