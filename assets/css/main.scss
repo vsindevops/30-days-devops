@@ -246,12 +246,14 @@ h3.archive__subtitle {
   pointer-events: none !important;
 }
 
-/* Full-width content area — use all the space the sidebar freed */
+/* Standard article width — matches GitHub/Dev.to readable column */
 .layout--single #main {
   display: block !important;
-  max-width: 1080px !important;
-  padding-left: 2em;
-  padding-right: 2em;
+  max-width: 860px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
 }
 
 .layout--single .page {
@@ -497,14 +499,15 @@ p code, li code, td code {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5em 1.25em;
-  margin: 1.6em 0;
+  margin: 1.6em auto;
   text-align: center;
   overflow-x: auto;
-  max-width: 100%;
+  max-width: 620px;
 }
 
 .mermaid svg {
   max-width: 100% !important;
+  width: 100% !important;
   height: auto !important;
   display: block;
   margin: 0 auto;
