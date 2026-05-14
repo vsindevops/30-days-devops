@@ -341,8 +341,6 @@ div.highlight {
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   margin: 1.5em 0 !important;
-  overflow-x: auto !important;
-  overflow-y: visible !important;
   box-shadow: none !important;
 }
 
@@ -353,8 +351,9 @@ div.highlight pre {
   font-size: 0.875rem !important;
   line-height: 1.7 !important;
   border: none !important;
-  overflow: visible !important;
+  overflow-x: auto !important;
   white-space: pre !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Inline code */
