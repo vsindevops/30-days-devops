@@ -72,6 +72,16 @@ flowchart TD
     classDef prod fill:#0d2818,stroke:#3fb950,color:#3fb950
 ```
 
+**Reading this diagram:**
+
+Start at the top — **"Your Node.js App"** is your source code (`src/`, `package.json`). It feeds into a single Dockerfile that runs three stages:
+
+- **Stage 1 (deps)** — starts from the lean `node:20-alpine` base and runs `npm ci --omit=dev`. Its only job is producing clean production `node_modules` with no test frameworks or devtools included. This stage also doubles as the base for your **development image** (`myapp:dev`), which layers nodemon on top for hot reload.
+- **Stage 2 (test)** — also starts from `node:20-alpine` but installs *all* dependencies, then runs your full test suite. This is a CI gate: if tests fail, the build stops here and nothing broken ever reaches production.
+- **Stage 3 (production)** — the only stage that ships. It starts from `distroless/nodejs20` (a ~28 MB base with no shell) and pulls in *only* the clean `node_modules` from Stage 1. No build tools, no dev dependencies, and no shell utilities from the earlier stages are carried over.
+
+The end result is two images: **`myapp:dev`** for local development with hot reload, and **`myapp:production`** at 47 MB running as `uid 65532` with zero critical CVEs.
+
 ---
 
 ## Prerequisites
@@ -545,6 +555,16 @@ flowchart LR
     classDef neutral fill:#1c2128,stroke:#30363d,color:#e6edf3
 ```
 
+**Reading this diagram:**
+
+Read each column as a vertical stack — every layer in the stack contributes to the final image size.
+
+The **red (left) column** is what the naive `node:20` image carries. The full Debian base alone is ~1 GB. Your devDependencies (nodemon, jest, supertest) sit on top, followed by a complete shell environment (bash, curl, wget, apt) and native build tools (gcc, python, make). Your actual app source sits at the very top — but it inherits every vulnerability in every layer below it. An attacker who gets code execution inside this container has a complete Unix environment to work with.
+
+The **green (right) column** is what the production image contains after the work in this article. The `distroless/nodejs20-debian12` base is ~28 MB — it contains the Debian C library and the Node.js binary, nothing else. Only production `node_modules` are copied in (~19 MB). Your app source is under 1 MB. There is no shell, no package manager, no build tools — not because they were removed, but because they were never added.
+
+This is the critical insight: **you cannot shrink an image by deleting things**. Deleted files still exist in the layer history and count toward image size. The only way to exclude something from a production image is to never copy it in. Multi-stage builds make that possible.
+
 ---
 
 ## Part 3: The production Dockerfile — multi-stage build
@@ -786,6 +806,21 @@ flowchart TD
     classDef prod fill:#0d2818,stroke:#3fb950,color:#3fb950
     classDef vol fill:#1f2210,stroke:#d29922,color:#d29922
 ```
+
+**Reading this diagram:**
+
+The two subgraphs represent two different ways to run the same application. You pick one with `docker compose up` (development) or `docker compose -f docker-compose.prod.yml up` (production-like testing).
+
+**Development (left subgraph):**
+- Traffic enters through port 3000 on your host machine and reaches the `myapp:dev` container (built on `node:20-alpine` with nodemon installed)
+- `./src` is **bind-mounted** into the container — every file you save locally is instantly visible inside the running container without rebuilding the image. The double-headed arrow in the diagram represents this live sync
+- `node_modules` lives in a **named volume** (the yellow cylinder), *not* a bind mount — this is intentional. Your local `node_modules` was compiled for your host OS (macOS/Linux). The container's `node_modules` was compiled for Alpine Linux. Mounting your local one over it would break native module bindings. The named volume keeps them separate
+- nodemon detects file changes and restarts the Node process in under 2 seconds
+
+**Production-like (right subgraph):**
+- No bind mounts anywhere — the source code is baked into the image at build time. There is no local folder syncing
+- The only volume is a `tmpfs` mounted at `/tmp` — this is a RAM-backed temporary filesystem that disappears when the container stops. The rest of the filesystem is **read-only**
+- This configuration tests whether your app can actually run in the constrained environment it will face in production: no write access, no dev tools, no root
 
 **`docker-compose.yml`** — development:
 
@@ -1033,6 +1068,16 @@ flowchart LR
     classDef good fill:#0d2818,stroke:#3fb950,color:#3fb950
     classDef neutral fill:#1c2128,stroke:#30363d,color:#8b949e
 ```
+
+**Reading this diagram:**
+
+Both paths start from the same trigger — you changed `src/index.js`. The outcome depends entirely on the order of instructions in your Dockerfile.
+
+**Wrong approach (red, top):** `COPY . .` copies *everything* — source files, `package.json`, the entire project — into a single layer before `npm install` runs. Docker caches layers by content. The moment *any* file in your project changes, this layer is invalidated, and every instruction after it re-runs from scratch. That includes `npm install`, which re-downloads and re-installs all your packages. A one-line code change costs **+45 seconds** of unnecessary dependency installation on every build.
+
+**Right approach (green, bottom):** `package.json` and `package-lock.json` are copied first in their own separate layer. `npm ci` runs against that layer and the result is cached. Your source code is copied in a second, later instruction. Now, when `src/index.js` changes, Docker checks the cache for the `COPY package*.json` and `RUN npm ci` layers — they haven't changed, so they're reused instantly. Only the `COPY src/` step re-runs. Total cost: **+2 seconds**.
+
+The rule to remember: **copy what changes rarely before what changes often**. Lockfiles change far less often than source code. Put them first.
 
 Copy only `package.json` and `package-lock.json` first, run `npm ci`, then copy source. Now `npm ci` only reruns when your dependency manifest changes. Source code changes are a fast copy operation.
 
