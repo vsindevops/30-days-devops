@@ -133,32 +133,30 @@ The **"GitHub Event"** node at the top represents any workflow trigger — it do
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart TD
-    subgraph COLD ["First Run — Cold Cache (~3 min)"]
-        direction TD
-        C1["Layer: FROM node:20-alpine\n↓ pull from Docker Hub"]:::cold
-        C2["Layer: WORKDIR /app\nCOPY package*.json .\n↓ copy files"]:::cold
-        C3["Layer: RUN npm ci\n↓ install ~450 packages\n~90 seconds"]:::cold
-        C4["Layer: COPY src/ .\n↓ copy application code"]:::cold
-        C5["Layer: RUN npm run test:ci\n↓ execute test suite"]:::cold
-        C1 --> C2 --> C3 --> C4 --> C5
-        C5 --> WRITE["Cache written to\nGHA cache store\n(keyed by layer hash)"]:::cachewrite
+    subgraph COLD ["First Run — Cold Cache  (~3 min total)"]
+        C1["FROM node:20-alpine\npull from Docker Hub"]:::cold
+        C2["COPY package.json package-lock.json\ncopy lockfiles"]:::cold
+        C3["RUN npm ci\ninstall packages  ~90 sec"]:::cold
+        C4["COPY src/\ncopy application code"]:::cold
+        C5["RUN npm run test:ci\nexecute test suite"]:::cold
+        WRITE["Cache written to GHA store\nkeyed by layer content hash"]:::cachewrite
+        C1 --> C2 --> C3 --> C4 --> C5 --> WRITE
     end
 
-    subgraph WARM ["Second Run — Warm Cache (~45 sec)"]
-        direction TD
-        W1["Layer: FROM node:20-alpine\n✓ CACHE HIT — restored"]:::warm
-        W2["Layer: WORKDIR /app\nCOPY package*.json .\n✓ CACHE HIT — restored"]:::warm
-        W3["Layer: RUN npm ci\n✓ CACHE HIT — restored\n~2 seconds"]:::warm
-        W4["Layer: COPY src/ .\n↓ src changed? rebuild this layer"]:::changed
-        W5["Layer: RUN npm run test:ci\n↓ always rebuilds after src/ change"]:::changed
-        W1 --> W2 --> W3 --> W4 --> W5
-        W5 --> READ["Cache updated\n(only changed layers\nare re-written)"]:::cachewrite
+    subgraph WARM ["Second Run — Warm Cache  (~45 sec total)"]
+        W1["FROM node:20-alpine\nCACHE HIT — restored"]:::warm
+        W2["COPY package.json package-lock.json\nCACHE HIT — restored"]:::warm
+        W3["RUN npm ci\nCACHE HIT — restored  ~2 sec"]:::warm
+        W4["COPY src/\nsrc changed — rebuild"]:::changed
+        W5["RUN npm run test:ci\nrebuilds after src change"]:::changed
+        READ["Cache updated\nonly changed layers re-written"]:::cachewrite
+        W1 --> W2 --> W3 --> W4 --> W5 --> READ
     end
 
-    WRITE -.->|"cache persists\nbetween runs"| READ
+    WRITE -.->|"cache persists between runs"| W1
 
-    classDef cold fill:#2a1f10,stroke:#d29922,color:#e6edf3
-    classDef warm fill:#0d2818,stroke:#3fb950,color:#e6edf3
+    classDef cold    fill:#2a1f10,stroke:#d29922,color:#e6edf3
+    classDef warm    fill:#0d2818,stroke:#3fb950,color:#e6edf3
     classDef changed fill:#1a2744,stroke:#58a6ff,color:#e6edf3
     classDef cachewrite fill:#1c2128,stroke:#30363d,color:#8b949e
 ```
