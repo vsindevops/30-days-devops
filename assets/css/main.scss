@@ -599,29 +599,16 @@ p code, li code, td code {
   margin-bottom: 0.75em;
 }
 
-/* Compact two-column grid */
-.page__related .grid__wrapper {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 0.75em !important;
-}
-
-.page__related .archive__item {
-  background: var(--bg-secondary) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-  padding: 0.75em 1em !important;
-}
-
-.page__related .archive__item-title {
-  font-size: 0.82em !important;
-  font-weight: 600 !important;
-  line-height: 1.35 !important;
-  margin-bottom: 0.3em !important;
+/* Compact card text — let MM's native grid handle layout */
+.page__related h2.archive__item-title {
+  font-size: 0.85em !important;
+  line-height: 1.4 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.25em !important;
 }
 
 .page__related .archive__item-excerpt {
-  font-size: 0.78em !important;
+  font-size: 0.8em !important;
   color: var(--text-secondary) !important;
   line-height: 1.5 !important;
   display: -webkit-box !important;
@@ -631,11 +618,10 @@ p code, li code, td code {
   margin: 0 !important;
 }
 
-/* Read time meta inside related cards */
 .page__related .page__meta {
   font-size: 0.75em !important;
   color: var(--text-secondary) !important;
-  margin-bottom: 0.3em !important;
+  margin-bottom: 0.2em !important;
 }
 
 /* --- Footer --------------------------------------------------------- */
