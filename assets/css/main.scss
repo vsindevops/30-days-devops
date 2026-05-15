@@ -586,8 +586,57 @@ p code, li code, td code {
 }
 
 /* --- Related posts -------------------------------------------------- */
-.page__related { border-top: 1px solid var(--border); margin-top: 2em; padding-top: 1.5em; }
-.page__related-title { font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-secondary); }
+.page__related {
+  border-top: 1px solid var(--border);
+  margin-top: 2em;
+  padding-top: 1.25em;
+}
+.page__related-title {
+  font-size: 0.72em;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+  margin-bottom: 0.75em;
+}
+
+/* Compact two-column grid */
+.page__related .grid__wrapper {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0.75em !important;
+}
+
+.page__related .archive__item {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 0.75em 1em !important;
+}
+
+.page__related .archive__item-title {
+  font-size: 0.82em !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  margin-bottom: 0.3em !important;
+}
+
+.page__related .archive__item-excerpt {
+  font-size: 0.78em !important;
+  color: var(--text-secondary) !important;
+  line-height: 1.5 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+}
+
+/* Read time meta inside related cards */
+.page__related .page__meta {
+  font-size: 0.75em !important;
+  color: var(--text-secondary) !important;
+  margin-bottom: 0.3em !important;
+}
 
 /* --- Footer --------------------------------------------------------- */
 .page__footer {
