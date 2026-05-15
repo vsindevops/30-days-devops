@@ -66,6 +66,16 @@ flowchart LR
     classDef cache fill:#2a1f10,stroke:#d29922,color:#d29922
 ```
 
+**Reading this diagram:**
+
+Traffic flows left to right. Start with **"Browser / curl"** on the far left — that's you, or any HTTP client hitting `localhost:80`.
+
+- The request first reaches **Nginx** (blue), the only service with a port binding to your host machine. Nothing else is reachable from outside the Compose network. Nginx's job is to receive the request and forward it on.
+- Nginx proxies the request to the **Node.js app** on internal port 3000 (also blue). This port is not exposed to your host — it only exists inside the Docker network. The label `proxy_pass :3000` is the exact Nginx directive that does this forwarding.
+- The Node.js app has two backend connections: **PostgreSQL** (green) for persistent data via SQL queries, and **Redis** (yellow) for cache reads and writes with a TTL. Both are internal-only services — they have no host port binding either.
+
+The key point: **only one service faces the outside world**. PostgreSQL and Redis are completely isolated from your laptop. An attacker who finds your laptop's port 80 can only reach Nginx — not your database.
+
 ---
 
 ## Prerequisites
@@ -759,6 +769,16 @@ flowchart TD
     classDef proxy fill:#1c2128,stroke:#30363d,color:#8b949e
 ```
 
+**Reading this diagram:**
+
+Read top to bottom. `docker compose up` triggers three waves of startup — each wave waits for the previous one to complete before starting.
+
+- **Wave 1 (green + yellow):** PostgreSQL and Redis start immediately in parallel. Neither has dependencies. Each runs its own health check on a loop: PostgreSQL uses `pg_isready`, Redis uses `redis-cli ping`. Until these pass, no other service starts.
+- **Wave 2 (blue):** The Node.js app starts *only after both* PostgreSQL and Redis report `service_healthy`. The `depends_on: condition: service_healthy` entries in the compose file enforce this. The app then runs its own health check — an HTTP request to `/health` — before it is considered ready.
+- **Wave 3 (grey):** Nginx starts *only after* the app is healthy. By this point the full chain is verified: database is up, cache is up, app is connected to both and responding on `/health`. Nginx can safely proxy traffic without hitting a "connection refused" error.
+
+The `service_healthy` condition replaces the old pattern of `sleep 5 && start-app` scripts, which are inherently fragile. This approach is deterministic: the wait is based on *actual readiness*, not a guess.
+
 The `depends_on` with `condition: service_healthy` means Docker Compose will not start the dependent service until the dependency's health check returns a passing state. This replaces the old pattern of `sleep 5 && start-app` shell scripts.
 
 Each health check has four parameters:
@@ -806,6 +826,17 @@ flowchart LR
     classDef svc  fill:#1c2128,stroke:#30363d,color:#8b949e
 ```
 
+**Reading this diagram:**
+
+The left side is the Docker host (your machine). The right side is the running containers. Every double-headed arrow is a mount — a path inside the container that is backed by storage outside it.
+
+There are two types, shown by colour:
+
+- **Green cylinders (named volumes):** `postgres_data`, `redis_data`, and `node_modules` are managed entirely by Docker. You don't see them as folders on your filesystem — Docker stores them in its own internal directory. They survive `docker compose down` but are wiped by `docker compose down -v`. Use these for anything that must *persist* (database files, cache snapshots) and for `node_modules` where host/container compatibility matters.
+- **Blue rectangles (bind mounts):** `./src` and `./nginx/nginx.conf` are actual folders and files on your laptop. Docker maps them directly into the container path. A file save on your host is instantly visible inside the container — this is what makes hot reload work. The `:ro` flag on `nginx.conf` means the container can read the config but cannot write back to it.
+
+The `node_modules` named volume deserves special attention. If you bind-mounted your entire project root, your host's `node_modules` (compiled for macOS or Windows) would overwrite the container's `node_modules` (compiled for Alpine Linux). Native addons like `bcrypt` would silently break. The named volume at `/app/node_modules` takes precedence over any bind mount at that path, keeping the two copies completely separate.
+
 **Named volumes** (`postgres_data`, `redis_data`, `node_modules`) are managed by Docker. They survive `docker compose down` but are removed by `docker compose down -v`. Use named volumes for anything you want to persist.
 
 **Bind mounts** (`./src`, `./nginx/nginx.conf`) link a path on your host to a path inside the container. Changes on the host are immediately visible inside the container — enabling hot reload without rebuilding the image.
@@ -842,6 +873,18 @@ flowchart TD
     classDef slow     fill:#1a2744,stroke:#58a6ff,color:#79b8ff
     classDef store    fill:#2a1f10,stroke:#d29922,color:#e6edf3
 ```
+
+**Reading this diagram:**
+
+Every `GET /api/users` request takes one of two paths depending on whether Redis has a cached copy.
+
+- **The diamond (yellow)** is the decision point — the app runs `redis.get('users:all')`. Two outcomes:
+- **Cache hit (green path, left):** Redis has the data. It's returned immediately as JSON — no database involved. Response time is ~1ms. This is the happy path for the second, third, fourth… request within the 60-second window.
+- **Cache miss (blue path, right):** Redis has nothing (first request, or TTL expired). The app falls through to PostgreSQL with a `SELECT * FROM users` query. This takes ~5–20ms depending on load. After the query returns, the result is immediately written into Redis with a 60-second TTL (`SETEX`) so the next request gets the fast path.
+
+Both paths converge at the same **HTTP 200 response** to the client. The only difference is *where* the data came from — and the response includes a `source` field (`"cache"` or `"database"`) so you can observe this behaviour directly with `curl`.
+
+The cache is **invalidated on writes**: when `POST /api/users` creates a new user, the route calls `redis.del('users:all')`. The next list request gets a cache miss, re-queries PostgreSQL with the new user included, and repopulates the cache. The data is never stale for more than one write cycle.
 
 When a `POST /api/users` creates a new user, the route immediately calls `redis.del('users:all')`, so the next list request re-queries PostgreSQL and repopulates the cache with fresh data.
 
