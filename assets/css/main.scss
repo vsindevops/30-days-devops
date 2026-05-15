@@ -677,3 +677,68 @@ p code, li code, td code {
 
 /* --- Selection highlight -------------------------------------------- */
 ::selection { background: rgba(88, 166, 255, 0.25); color: var(--text-primary); }
+
+/* --- Buy Me a Coffee — end-of-article block ------------------------- */
+.bmc-article-block {
+  margin: 3em 0 1.5em;
+  padding-top: 2.5em;
+  border-top: 1px solid var(--border);
+}
+
+.bmc-article-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5em;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4em 1.75em;
+  flex-wrap: wrap;
+}
+
+.bmc-text { flex: 1 1 200px; }
+
+.bmc-heading {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.3em;
+}
+
+.bmc-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.bmc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  background: #FFDD00;
+  color: #000000 !important;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.65em 1.4em;
+  border-radius: 6px;
+  text-decoration: none !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(255, 221, 0, 0.2);
+}
+
+.bmc-btn:hover {
+  background: #FFE933 !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 16px rgba(255, 221, 0, 0.35);
+  text-decoration: none !important;
+}
+
+@media (max-width: 520px) {
+  .bmc-article-inner { flex-direction: column; align-items: flex-start; }
+  .bmc-btn { width: 100%; justify-content: center; }
+}
