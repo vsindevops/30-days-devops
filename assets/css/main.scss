@@ -599,26 +599,37 @@ p code, li code, td code {
   margin-bottom: 0.75em;
 }
 
-/* Card shell */
+/* Force flexbox so cards size properly */
+.page__related .grid__wrapper {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+}
+
+/* Card shell — each card takes ~half width, min 240px before wrapping */
 .page__related .grid__item {
+  flex: 1 1 calc(50% - 0.75rem) !important;
+  min-width: 240px !important;
+  width: auto !important;
+  max-width: none !important;
   background: var(--bg-secondary) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   padding: 0.85rem 1rem !important;
   overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
-/* Title — clamp to 2 lines */
+/* Title — full title visible, no clamp */
 .page__related .grid__item h2,
 .page__related .grid__item .archive__item-title {
-  font-size: 0.82rem !important;
+  font-size: 0.85rem !important;
   font-weight: 600 !important;
-  line-height: 1.35 !important;
+  line-height: 1.4 !important;
   margin: 0 0 0.3rem 0 !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  display: block !important;
+  white-space: normal !important;
 }
 
 /* Read time */
