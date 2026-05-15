@@ -616,7 +616,7 @@ COPY . .
 
 RUN npm run test:ci --if-present
 
-# ─── Stage 3: production ──────────────────────────────────────────────────────
+# ─── Stage 4: production ──────────────────────────────────────────────────────
 # The only stage that ships. Built on distroless — no shell, no package manager,
 # no system utilities. The absolute minimum to run a Node.js process.
 FROM gcr.io/distroless/nodejs20-debian12 AS production
@@ -1027,7 +1027,7 @@ docker info &>/dev/null      || { echo "Docker daemon not running"; exit 1; }
   echo "Created .env from .env.example — update before production use"
 
 echo "Building dev image..."
-DOCKER_BUILDKIT=1 docker build --target deps --tag "${APP}:dev" .
+DOCKER_BUILDKIT=1 docker build --target dev --tag "${APP}:dev" .
 
 echo "Building production image..."
 DOCKER_BUILDKIT=1 docker build --target production --tag "${APP}:production" .

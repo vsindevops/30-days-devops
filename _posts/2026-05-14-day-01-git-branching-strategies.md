@@ -106,6 +106,18 @@ gitGraph
    merge hotfix/1.0.1
 ```
 
+**Reading this diagram:**
+
+Read left to right — time flows from left to right, just like a real commit history.
+
+- The **main** branch (top row) starts with tag `v0.9.0` — your current production release.
+- **develop** branches off `main` and is where all feature work accumulates before a release.
+- **feature/auth** branches off `develop`, represents isolated work on one feature, then merges back to `develop` when done. Note the merge commit — GitFlow always uses `--no-ff` so the branch history is preserved.
+- **release/1.0.0** branches off `develop` when you're ready to ship. Only bug fixes go in here. When stable, it merges into both `main` (tagged `v1.0.0`) *and* back into `develop` so develop has the fixes too.
+- **hotfix/1.0.1** branches directly off `main` (not develop) — it fixes an urgent production bug. It merges into both `main` (tagged `v1.0.1`) and `develop` so the fix is not lost.
+
+The two key rules: **features always branch from develop**, **hotfixes always branch from main**.
+
 **Lifecycle of a feature:**
 
 ```bash
@@ -171,6 +183,16 @@ gitGraph
    commit id: "release" tag: "v1.1.0"
 ```
 
+**Reading this diagram:**
+
+Read left to right. There is only one long-lived branch: **main**.
+
+- All work starts from `main`. A developer creates **feature/dashboard**, makes one or two commits, and merges back to `main` within hours or days — not weeks.
+- The merge commit is labelled `flag: off` — the code ships to production immediately, but the feature is hidden behind a feature flag. Users don't see it until the flag is turned on.
+- `main` is tagged `v1.1.0` directly. There is no `release` branch — every merge to `main` is a potential release.
+
+The key rule: **branches are short-lived (hours to days), never long-running**. The feature flag is what separates "deployed" from "released."
+
 **The key practices that make TBD work:**
 
 1. **Feature flags** — incomplete features are deployed but hidden behind a flag
@@ -209,6 +231,16 @@ flowchart TD
     style E fill:#1b3a5a,color:#fff
     style H fill:#1b3a5a,color:#fff
 ```
+
+**Reading this diagram:**
+
+Start at the top and answer each question honestly for your team.
+
+- **Multiple versions in production at once?** (e.g. SaaS with enterprise customers on v2 while others are on v3) → GitFlow. Trunk-Based Development cannot manage parallel release lines.
+- **Deploy multiple times per day?** → TBD. GitFlow's release branch ceremony adds too much overhead for continuous deployment.
+- **Test coverage above 80%?** → TBD requires a strong test suite — you're merging to main constantly and relying on CI to catch regressions. Below 80%, that's risky.
+- **Regulated industry with a formal QA gate?** (finance, healthcare, government) → GitFlow. The release branch gives you a clear, auditable window for QA sign-off before any code reaches production.
+- **None of the above?** → TBD, but invest in test coverage first. Trunk-Based without tests is just "merge to main and hope."
 
 ---
 
@@ -312,9 +344,9 @@ ls -la .husky/
 Expected output:
 ```
 total 16
-drwxr-xr-x  3 user user 4096 Jan 15 10:23 .
-drwxr-xr-x 12 user user 4096 Jan 15 10:23 ..
--rwxr-xr-x  1 user user   29 Jan 15 10:23 pre-commit
+drwxr-xr-x  3 user user 4096 May 14 10:23 .
+drwxr-xr-x 12 user user 4096 May 14 10:23 ..
+-rwxr-xr-x  1 user user   29 May 14 10:23 pre-commit
 ```
 
 ### Step 4: Install and configure commitlint
@@ -469,6 +501,16 @@ flowchart LR
     F -->|Pass| H([Commit created])
 ```
 
+**Reading this diagram:**
+
+This is what happens the instant you run `git commit`. Read top to bottom.
+
+- **lint-staged** runs first — it takes only the files you've staged (not the whole codebase) and runs ESLint + Prettier on them. If any file fails linting or formatting, the commit is rejected before it's created.
+- **commitlint** validates your commit message format. If the message doesn't match the Conventional Commits pattern (e.g. `feat(scope): description`), the commit is rejected.
+- Only if both pass does **git commit** actually record the commit to your local history.
+
+The key point: failures here are cheap — they only affect your local machine and are caught in seconds.
+
 **On push:**
 
 ```mermaid
@@ -478,6 +520,15 @@ flowchart LR
     C -->|Yes| D([Blocked — open a PR])
     C -->|No| E([Push succeeds])
 ```
+
+**Reading this diagram:**
+
+This runs when you `git push`. Read top to bottom.
+
+- **Branch check** runs first — the pre-push hook reads the branch you're pushing to and blocks direct pushes to `main`, `master`, or `develop`. You cannot accidentally push directly to a protected branch from the command line.
+- Only if the branch is allowed through does the push reach GitHub.
+
+This is your last local safety net before code leaves your machine.
 
 ### Step 7: Create the PR template
 
@@ -624,14 +675,22 @@ Every PR triggers this pipeline before anyone can merge:
 flowchart TD
     A([PR opened]) --> B[lint]
     A --> C[commitlint]
-    A --> D[test]
-    B --> E{All checks\npassed?}
-    C --> E
+    B --> D[test]
+    C --> E{All checks\npassed?}
     D --> E
     E -->|No| F([PR blocked])
     E -->|Yes| G([Awaiting review])
     G --> H([Merged to main])
 ```
+
+**Reading this diagram:**
+
+This runs on GitHub Actions whenever a pull request is opened or updated.
+
+- **lint** and **commitlint** start in parallel as soon as the PR is opened — they have no dependencies on each other.
+- **test** waits for **lint** to pass first (`needs: lint` in the YAML). This ordering prevents wasting time running tests against code that already has linting errors.
+- All three jobs feed into the **"All checks passed?"** gate. If any one fails, the PR is blocked from merging. GitHub enforces this through branch protection rules.
+- On success, the pipeline ends — the code is ready to merge. Deployment happens separately (covered in a later article).
 
 ---
 
@@ -663,6 +722,8 @@ git flow init -d
 ```
 
 The `-d` flag accepts all defaults. This creates and configures:
+
+> **Note:** git-flow's hardcoded default production branch is `master`, not `main`. The `-d` flag accepts all defaults without prompting. If your repository uses `main`, run `git flow init` (without `-d`) and type `main` at the first prompt. The configuration shown above reflects a repo already initialized with `main` as the primary branch.
 
 ```
 Branch name for production releases: main
@@ -727,11 +788,11 @@ git flow feature finish user-authentication
 
 Expected output:
 ```
-Branches 'develop' and 'feature/user-authentication' have diverged.
-Updating 9f3e2a1..c4b8d2f
-Fast-forward (no commit created; -m option ignored)
+Switched to branch 'develop'
+Merge made by the 'ort' strategy.
  src/auth/index.js | 6 ++++++
  1 file changed, 6 insertions(+)
+ create mode 100644 src/auth/index.js
 Deleted branch feature/user-authentication (was c4b8d2f).
 
 Summary of actions:
@@ -754,6 +815,11 @@ git commit -m "release: bump version to 1.0.0"
 
 # Finish the release
 # This: merges to main, tags v1.0.0, merges back to develop
+```
+
+> **Note:** This command opens your `$EDITOR` twice — once for the merge commit message and once for the annotated tag message. Type the message, save, and close the editor each time. To skip the editor prompts, use the `-m` flag: `git flow release finish -m "Release v1.0.0" '1.0.0'`.
+
+```bash
 git flow release finish '1.0.0'
 ```
 
@@ -776,6 +842,11 @@ v1.0.0
 # Start hotfix from main
 git flow hotfix start 1.0.1
 
+```
+
+> **Note:** In a real project, use your editor to update the existing `module.exports` line. The `cat >>` append is used here only to simulate a file change quickly — it results in two `module.exports` assignments where only the last one takes effect.
+
+```bash
 cat >> src/auth/index.js << 'EOF'
 
 // Hotfix: prevent null username crash
@@ -791,6 +862,11 @@ git add src/auth/index.js
 git commit -m "fix(auth): prevent null username crash in authenticate"
 
 # Finish hotfix — merges to main AND develop
+```
+
+> **Note:** This opens your `$EDITOR` for the merge commit messages. Use `GIT_MERGE_AUTOEDIT=no git flow hotfix finish '1.0.1'` to skip the editor.
+
+```bash
 git flow hotfix finish '1.0.1'
 ```
 
@@ -891,7 +967,7 @@ const flags = {
   // Format: FEATURE_FLAG_<NAME>=true|false
   NEW_DASHBOARD: process.env.FEATURE_FLAG_NEW_DASHBOARD === 'true',
   BETA_SEARCH: process.env.FEATURE_FLAG_BETA_SEARCH === 'true',
-  USER_AUTHENTICATION_V2: process.env.FEATURE_FLAG_USER_AUTH_V2 === 'true',
+  USER_AUTHENTICATION_V2: process.env.FEATURE_FLAG_USER_AUTHENTICATION_V2 === 'true',
 };
 
 const isEnabled = (flagName) => {
@@ -1099,10 +1175,10 @@ git flow version
 
 ### Error 4: Branch protection API returns 403
 
-```
+```json
 {
-  "message": "Not Found",
-  "documentation_url": "..."
+  "message": "Must have admin rights to Repository.",
+  "documentation_url": "https://docs.github.com/rest/branches/branch-protection"
 }
 ```
 
@@ -1114,7 +1190,7 @@ git flow version
 gh auth status
 
 # Re-authenticate with correct scopes
-gh auth login --scopes repo,workflow
+gh auth refresh -s repo,workflow
 ```
 
 ---
