@@ -1,6 +1,6 @@
 remote_theme: mmistakes/minimal-mistakes@4.26.2
 
-title: "syssignals"
+title: "Systems and Signals"
 subtitle: "DevOps · MLOps · Security — learn by building."
 description: "Systems and Signals publishes hands-on, project-based articles on DevOps, cloud infrastructure, containers, and platform engineering. Every article ships working code."
 url: "https://syssignals.com"
