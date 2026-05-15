@@ -535,7 +535,6 @@ Here is exactly what each image contains, and what the production image leaves o
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
     subgraph NAIVE ["❌  Naive Image · 1.21 GB · runs as root"]
-        direction TB
         N1["node:20 Debian base\n~1.0 GB"]:::bad
         N2["devDependencies\nnodemon · jest · supertest"]:::bad
         N3["Shell: bash · curl · wget · apt"]:::bad
@@ -545,7 +544,6 @@ flowchart LR
     end
 
     subgraph PROD ["✓  Production Image · 47 MB · uid 65532"]
-        direction TB
         P1["distroless/nodejs20-debian12\n~28 MB"]:::good
         P2["prod node_modules only\n~19 MB"]:::good
         P3["Your app source\n< 1 MB"]:::good

@@ -97,7 +97,7 @@ The key insight: PRs never publish images. Only a merge to main, after passing t
 flowchart TD
     TRIGGER(["GitHub Event\npull_request OR push to main"]):::neutral
 
-    TRIGGER --> TEST["Job 1: test\nruns-on: ubuntu-latest\nbuild --target test\n✓ exits 0 if tests pass\n✗ exits 1 if tests fail"]:::testjob
+    TRIGGER --> TEST["Job 1: test\nruns-on: ubuntu-latest\nbuild --target test\nexits 0 = pass / exits 1 = fail"]:::testjob
 
     TEST -->|"needs: test\nalways runs after test passes"| BAP["Job 2: build-and-push\nruns-on: ubuntu-latest\nneeds: [test]\npush: true ONLY if\ngithub.event_name == push\n&& github.ref == refs/heads/main"]:::bapjob
 
@@ -106,8 +106,8 @@ flowchart TD
     FAIL_TEST["Pipeline stops\nbuild-and-push skipped\nscan skipped"]:::fail
     FAIL_SCAN["Pipeline fails\nteam notified\nimage stays in GHCR\n(but CI is red)"]:::fail
 
-    TEST -->|"✗ test fails"| FAIL_TEST
-    SCAN -->|"✗ critical/high CVEs found"| FAIL_SCAN
+    TEST -->|"test fails"| FAIL_TEST
+    SCAN -->|"CVEs found"| FAIL_SCAN
 
     classDef neutral fill:#1c2128,stroke:#30363d,color:#8b949e
     classDef testjob fill:#2a1f10,stroke:#d29922,color:#e6edf3

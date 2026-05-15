@@ -503,7 +503,7 @@ flowchart LR
 
 **Reading this diagram:**
 
-This is what happens the instant you run `git commit`. Read top to bottom.
+This is what happens the instant you run `git commit`. Read left to right.
 
 - **lint-staged** runs first — it takes only the files you've staged (not the whole codebase) and runs ESLint + Prettier on them. If any file fails linting or formatting, the commit is rejected before it's created.
 - **commitlint** validates your commit message format. If the message doesn't match the Conventional Commits pattern (e.g. `feat(scope): description`), the commit is rejected.
@@ -523,7 +523,7 @@ flowchart LR
 
 **Reading this diagram:**
 
-This runs when you `git push`. Read top to bottom.
+This runs when you `git push`. Read left to right.
 
 - **Branch check** runs first — the pre-push hook reads the branch you're pushing to and blocks direct pushes to `main`, `master`, or `develop`. You cannot accidentally push directly to a protected branch from the command line.
 - Only if the branch is allowed through does the push reach GitHub.
