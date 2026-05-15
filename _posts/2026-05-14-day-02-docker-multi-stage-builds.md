@@ -25,7 +25,7 @@ You've been there. You've been both people in that story.
 
 Docker was supposed to fix this. And it does — but only if you use it correctly. Most teams don't. They write a Dockerfile that works, ship it, and never look back. That Dockerfile ends up in production running as root, carrying 800 MB of build tools nobody needs, with 47 CVEs sitting quietly in a base image from 2021.
 
-This article fixes that. You'll take a real Node.js application from a 1.2 GB naive image down to a 45 MB hardened production image. Every decision is explained. Every command is verified. By the end you'll have a Dockerfile template you can drop into any project and trust.
+This article fixes that. You'll take a real Node.js application from a 1.2 GB naive image down to a 47 MB hardened production image. Every decision is explained. Every command is verified. By the end you'll have a Dockerfile template you can drop into any project and trust.
 
 ---
 
@@ -42,7 +42,7 @@ A production-grade Docker setup for a Node.js REST API, including:
 - A reusable `docker/` folder structure for any project
 
 **Estimated time:** 60 minutes  
-**Final image size:** ~45 MB (down from ~1.2 GB)
+**Final image size:** ~47 MB (down from ~1.2 GB)
 
 Here is the complete picture of what this build produces:
 
@@ -53,8 +53,9 @@ flowchart TD
 
     subgraph BUILD ["Multi-Stage Dockerfile"]
         DEPS["Stage 1 · deps\nnode:20-alpine\nnpm ci --omit=dev"]:::stage
-        TEST["Stage 2 · test\nnode:20-alpine\nnpm run test:ci"]:::stage
-        FINAL["Stage 3 · production\ndistroless/nodejs20\nUSER nonroot"]:::stage
+        DEV_S["Stage 2 · dev\nnode:20-alpine\nnpm ci (all deps)"]:::stage
+        TEST["Stage 3 · test\nnode:20-alpine\nnpm run test:ci"]:::stage
+        FINAL["Stage 4 · production\ndistroless/nodejs20\nUSER nonroot"]:::stage
         DEPS -->|"prod node_modules only"| FINAL
         TEST -->|"CI gate — must pass"| FINAL
     end
@@ -63,7 +64,7 @@ flowchart TD
     PROD_IMG["myapp:production\n47 MB · uid 65532\nzero critical CVEs"]:::prod
 
     SRC --> BUILD
-    DEPS --> DEV_IMG
+    DEV_S --> DEV_IMG
     FINAL --> PROD_IMG
 
     classDef src fill:#1a2744,stroke:#58a6ff,color:#e6edf3
@@ -76,9 +77,10 @@ flowchart TD
 
 Start at the top — **"Your Node.js App"** is your source code (`src/`, `package.json`). It feeds into a single Dockerfile that runs three stages:
 
-- **Stage 1 (deps)** — starts from the lean `node:20-alpine` base and runs `npm ci --omit=dev`. Its only job is producing clean production `node_modules` with no test frameworks or devtools included. This stage also doubles as the base for your **development image** (`myapp:dev`), which layers nodemon on top for hot reload.
-- **Stage 2 (test)** — also starts from `node:20-alpine` but installs *all* dependencies, then runs your full test suite. This is a CI gate: if tests fail, the build stops here and nothing broken ever reaches production.
-- **Stage 3 (production)** — the only stage that ships. It starts from `distroless/nodejs20` (a ~28 MB base with no shell) and pulls in *only* the clean `node_modules` from Stage 1. No build tools, no dev dependencies, and no shell utilities from the earlier stages are carried over.
+- **Stage 1 (deps)** — starts from the lean `node:20-alpine` base and runs `npm ci --omit=dev`. Its only job is producing clean production `node_modules` with no test frameworks or devtools. Its output is consumed by the production stage.
+- **Stage 2 (dev)** — also starts from `node:20-alpine` but runs `npm ci` with *all* dependencies including devDependencies (nodemon, jest, etc.). This is the base for your **development image** (`myapp:dev`) used by docker-compose for hot reload.
+- **Stage 3 (test)** — installs all dependencies and runs your full test suite. This is a CI gate: if tests fail, the build stops here and nothing broken ever reaches production.
+- **Stage 4 (production)** — the only stage that ships. It starts from `distroless/nodejs20` (a ~28 MB base with no shell) and pulls in *only* the clean `node_modules` from Stage 1. No build tools, no dev dependencies, and no shell utilities from the earlier stages are carried over.
 
 The end result is two images: **`myapp:dev`** for local development with hot reload, and **`myapp:production`** at 47 MB running as `uid 65532` with zero critical CVEs.
 
@@ -452,7 +454,7 @@ Expected output:
 ```json
 {
     "status": "healthy",
-    "timestamp": "2025-01-15T10:23:45.123Z",
+    "timestamp": "2026-05-14T10:23:45.123Z",
     "uptime": 0,
     "environment": "development"
 }
@@ -575,7 +577,7 @@ Multi-stage builds use multiple `FROM` statements in one Dockerfile. Each stage 
 cat > Dockerfile << 'EOF'
 # ─── Stage 1: deps ────────────────────────────────────────────────────────────
 # Install production dependencies only.
-# This stage is never shipped. Its only output is node_modules.
+# Used by the production stage (COPY --from=deps).
 FROM node:20-alpine AS deps
 
 WORKDIR /app
@@ -587,9 +589,20 @@ COPY package.json package-lock.json ./
 
 # npm ci: uses lockfile exactly, fails if lockfile is out of sync
 # --omit=dev: excludes devDependencies (nodemon, jest, etc.)
-RUN npm ci --omit=dev --frozen-lockfile
+RUN npm ci --omit=dev
 
-# ─── Stage 2: test ────────────────────────────────────────────────────────────
+# ─── Stage 2: dev ─────────────────────────────────────────────────────────────
+# All dependencies including devDependencies (nodemon, jest, etc.).
+# Used by docker-compose.yml for local development with hot reload.
+# Tests are NOT run here — that's the test stage's job in CI.
+FROM node:20-alpine AS dev
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# ─── Stage 3: test ────────────────────────────────────────────────────────────
 # Runs tests with all dependencies (including dev).
 # CI can build this target to gate on test failures before shipping prod.
 FROM node:20-alpine AS test
@@ -597,7 +610,7 @@ FROM node:20-alpine AS test
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --frozen-lockfile
+RUN npm ci
 
 COPY . .
 
@@ -650,7 +663,7 @@ Expected output:
 [+] Building 18.4s (13/13) FINISHED
  => [deps 1/3] FROM docker.io/library/node:20-alpine
  => [deps 2/3] COPY package.json package-lock.json ./
- => [deps 3/3] RUN npm ci --omit=dev --frozen-lockfile
+ => [deps 3/3] RUN npm ci --omit=dev
  => [production 1/4] COPY --from=deps /app/node_modules
  => [production 2/4] COPY src/ ./src/
  => [production 3/4] COPY package.json ./
@@ -832,7 +845,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: deps
+      target: dev
     image: myapp:dev
     container_name: myapp-dev
     restart: unless-stopped

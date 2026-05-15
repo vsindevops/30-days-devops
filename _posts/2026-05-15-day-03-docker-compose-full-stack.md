@@ -82,9 +82,11 @@ The key point: **only one service faces the outside world**. PostgreSQL and Redi
 
 ### Day 2 completed
 
-This article extends the project built in Day 2. You need the `docker-best-practices/` directory on your machine with a working `Dockerfile` and the Node.js application source.
+This article extends the project built in Day 2. You need the `docker-best-practices/` directory on your machine with a working `Dockerfile`, `.dockerignore`, and the Node.js application source files.
 
-If you skipped Day 2, you can bootstrap the required starting point:
+**The strongly recommended path is to complete Day 2 first.** The Dockerfile with its multi-stage build is a core dependency of this article and is not reproduced here.
+
+If you only want the npm setup and can copy the `Dockerfile` and `.dockerignore` from the [Day 2 article](/articles/2026/05/14/day-02-docker-multi-stage-builds/), here is the minimum package bootstrap:
 
 ```bash
 mkdir docker-best-practices && cd docker-best-practices
@@ -640,7 +642,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: deps           # dev target: includes all dependencies
+      target: dev            # dev stage: includes all devDependencies (nodemon etc.)
     container_name: dev-app
     restart: unless-stopped
     expose:
@@ -833,7 +835,7 @@ The left side is the Docker host (your machine). The right side is the running c
 There are two types, shown by colour:
 
 - **Green cylinders (named volumes):** `postgres_data`, `redis_data`, and `node_modules` are managed entirely by Docker. You don't see them as folders on your filesystem — Docker stores them in its own internal directory. They survive `docker compose down` but are wiped by `docker compose down -v`. Use these for anything that must *persist* (database files, cache snapshots) and for `node_modules` where host/container compatibility matters.
-- **Blue rectangles (bind mounts):** `./src` and `./nginx/nginx.conf` are actual folders and files on your laptop. Docker maps them directly into the container path. A file save on your host is instantly visible inside the container — this is what makes hot reload work. The `:ro` flag on `nginx.conf` means the container can read the config but cannot write back to it.
+- **Blue rectangles (bind mounts):** `./src` and `./nginx/nginx.conf` are actual folders and files on your laptop. Docker maps them directly into the container path. A file save on your host is instantly visible inside the container — this is what makes hot reload work for `./src`. The `:ro` flag on `nginx.conf` means the container can read the config but cannot write back to it. Note: editing `nginx.conf` on the host is immediately visible inside the container, but the running Nginx process won't pick up the change until you run `docker exec dev-nginx nginx -s reload`.
 
 The `node_modules` named volume deserves special attention. If you bind-mounted your entire project root, your host's `node_modules` (compiled for macOS or Windows) would overwrite the container's `node_modules` (compiled for Alpine Linux). Native addons like `bcrypt` would silently break. The named volume at `/app/node_modules` takes precedence over any bind mount at that path, keeping the two copies completely separate.
 
@@ -856,7 +858,7 @@ flowchart TD
     CHECK{"Redis: GET\nusers:all"}:::decision
 
     HIT["Return cached JSON\nsource: 'cache'\n~1ms"]:::fast
-    MISS["Query PostgreSQL\nSELECT * FROM users\n~5–20ms"]:::slow
+    MISS["Query PostgreSQL\nSELECT … FROM users\n~5–20ms"]:::slow
     STORE["Redis: SETEX\nusers:all  TTL 60s"]:::store
     RESP(["HTTP 200 to client"]):::entry
 
@@ -880,7 +882,7 @@ Every `GET /api/users` request takes one of two paths depending on whether Redis
 
 - **The diamond (yellow)** is the decision point — the app runs `redis.get('users:all')`. Two outcomes:
 - **Cache hit (green path, left):** Redis has the data. It's returned immediately as JSON — no database involved. Response time is ~1ms. This is the happy path for the second, third, fourth… request within the 60-second window.
-- **Cache miss (blue path, right):** Redis has nothing (first request, or TTL expired). The app falls through to PostgreSQL with a `SELECT * FROM users` query. This takes ~5–20ms depending on load. After the query returns, the result is immediately written into Redis with a 60-second TTL (`SETEX`) so the next request gets the fast path.
+- **Cache miss (blue path, right):** Redis has nothing (first request, or TTL expired). The app falls through to PostgreSQL with `SELECT id, name, email, role, created_at FROM users ORDER BY id`. This takes ~5–20ms depending on load. After the query returns, the result is immediately written into Redis with a 60-second TTL (`SETEX`) so the next request gets the fast path.
 
 Both paths converge at the same **HTTP 200 response** to the client. The only difference is *where* the data came from — and the response includes a `source` field (`"cache"` or `"database"`) so you can observe this behaviour directly with `curl`.
 
@@ -933,7 +935,7 @@ dev-postgres   postgres:16-alpine     Up 35 seconds (healthy)  5432/tcp
 dev-redis      redis:7-alpine         Up 35 seconds (healthy)  6379/tcp
 ```
 
-All four services must show `healthy` before you continue.
+PostgreSQL, Redis, and the app must show `(healthy)`. Nginx does not have a health check defined and will show only `Up` — that is expected.
 
 ### Test every endpoint
 
@@ -1005,6 +1007,13 @@ Expected:
             "name": "Bob",
             "email": "bob@example.com",
             "role": "user",
+            "created_at": "2026-05-15T10:23:20.000Z"
+        },
+        {
+            "id": 3,
+            "name": "Carol",
+            "email": "carol@example.com",
+            "role": "viewer",
             "created_at": "2026-05-15T10:23:20.000Z"
         }
     ],
