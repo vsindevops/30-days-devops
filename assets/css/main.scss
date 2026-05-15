@@ -592,23 +592,45 @@ p code, li code, td code {
   padding-top: 1.25em;
 }
 .page__related-title {
-  font-size: 0.72em;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-secondary);
   margin-bottom: 0.75em;
 }
 
-/* Compact card text — let MM's native grid handle layout */
-.page__related h2.archive__item-title {
-  font-size: 0.85em !important;
-  line-height: 1.4 !important;
-  margin-top: 0 !important;
-  margin-bottom: 0.25em !important;
+/* Card shell */
+.page__related .grid__item {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 0.85rem 1rem !important;
+  overflow: hidden !important;
 }
 
-.page__related .archive__item-excerpt {
-  font-size: 0.8em !important;
+/* Title — clamp to 2 lines */
+.page__related .grid__item h2,
+.page__related .grid__item .archive__item-title {
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  margin: 0 0 0.3rem 0 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+/* Read time */
+.page__related .grid__item .page__meta {
+  font-size: 0.72rem !important;
+  color: var(--text-secondary) !important;
+  margin: 0 0 0.3rem 0 !important;
+}
+
+/* Excerpt — clamp to 2 lines */
+.page__related .grid__item .archive__item-excerpt {
+  font-size: 0.78rem !important;
   color: var(--text-secondary) !important;
   line-height: 1.5 !important;
   display: -webkit-box !important;
@@ -616,12 +638,6 @@ p code, li code, td code {
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
   margin: 0 !important;
-}
-
-.page__related .page__meta {
-  font-size: 0.75em !important;
-  color: var(--text-secondary) !important;
-  margin-bottom: 0.2em !important;
 }
 
 /* --- Footer --------------------------------------------------------- */
