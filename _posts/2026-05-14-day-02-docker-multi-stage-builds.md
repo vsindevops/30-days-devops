@@ -811,16 +811,16 @@ flowchart TD
 
 The two subgraphs represent two different ways to run the same application. You pick one with `docker compose up` (development) or `docker compose -f docker-compose.prod.yml up` (production-like testing).
 
-**Development (left subgraph):**
+**Production-like (left subgraph):**
+- No bind mounts anywhere — the source code is baked into the image at build time. There is no local folder syncing
+- The only volume is a `tmpfs` mounted at `/tmp` — this is a RAM-backed temporary filesystem that disappears when the container stops. The rest of the filesystem is **read-only**
+- This configuration tests whether your app can actually run in the constrained environment it will face in production: no write access, no dev tools, no root
+
+**Development (right subgraph):**
 - Traffic enters through port 3000 on your host machine and reaches the `myapp:dev` container (built on `node:20-alpine` with nodemon installed)
 - `./src` is **bind-mounted** into the container — every file you save locally is instantly visible inside the running container without rebuilding the image. The double-headed arrow in the diagram represents this live sync
 - `node_modules` lives in a **named volume** (the yellow cylinder), *not* a bind mount — this is intentional. Your local `node_modules` was compiled for your host OS (macOS/Linux). The container's `node_modules` was compiled for Alpine Linux. Mounting your local one over it would break native module bindings. The named volume keeps them separate
 - nodemon detects file changes and restarts the Node process in under 2 seconds
-
-**Production-like (right subgraph):**
-- No bind mounts anywhere — the source code is baked into the image at build time. There is no local folder syncing
-- The only volume is a `tmpfs` mounted at `/tmp` — this is a RAM-backed temporary filesystem that disappears when the container stops. The rest of the filesystem is **read-only**
-- This configuration tests whether your app can actually run in the constrained environment it will face in production: no write access, no dev tools, no root
 
 **`docker-compose.yml`** — development:
 
