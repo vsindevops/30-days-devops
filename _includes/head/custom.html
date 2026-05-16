@@ -160,22 +160,21 @@ document.addEventListener('DOMContentLoaded', function () {
     var pre = block.querySelector('pre');
     if (!pre) return;
 
-    // Language label — read Rouge class from the <code> element
-    var code = pre.querySelector('code');
-    if (code) {
-      var match = Array.from(code.classList).find(function (c) {
-        return c.startsWith('language-');
-      });
-      if (match) {
-        var lang = match.replace('language-', '');
-        var skip = ['plaintext', 'text', 'console', 'mermaid'];
-        if (!skip.includes(lang)) {
-          var label = document.createElement('span');
-          label.className = 'code-lang';
-          label.textContent = LANG_NAMES[lang] || lang.toUpperCase();
-          block.appendChild(label);
-          block.classList.add('has-lang-label');
-        }
+    // Language label — Rouge puts language-* on the outer wrapper div,
+    // which is the parent of div.highlight (e.g. div.language-bash.highlighter-rouge)
+    var outer = block.parentElement;
+    var match = Array.from(outer.classList).find(function (c) {
+      return c.startsWith('language-');
+    });
+    if (match) {
+      var lang = match.replace('language-', '');
+      var skip = ['plaintext', 'text', 'console', 'mermaid'];
+      if (!skip.includes(lang)) {
+        var label = document.createElement('span');
+        label.className = 'code-lang';
+        label.textContent = LANG_NAMES[lang] || lang.toUpperCase();
+        block.appendChild(label);
+        block.classList.add('has-lang-label');
       }
     }
 
