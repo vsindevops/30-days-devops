@@ -18,6 +18,10 @@ author:
       icon: "fab fa-fw fa-x-twitter"
       url: "https://x.com/syssignals"
 
+# Search
+search: true
+search_full_content: true
+
 # Build settings
 markdown: kramdown
 highlighter: rouge
