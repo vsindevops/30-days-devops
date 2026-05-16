@@ -109,9 +109,9 @@ flowchart LR
 
 **Reading this diagram:**
 
-The left side (red boxes) shows the raw-YAML approach: one folder per environment, each containing a full copy of `deployment.yaml` and `service.yaml`. The differences between them are tiny — just a few fields like `replicas` and `image:tag` — but the **entire file** must be duplicated because YAML has no variable substitution. When you change a label across all environments, you edit three files. When the schema evolves, you edit three files. Drift is inevitable.
+The **"Without Helm"** subgraph (red boxes) shows the raw-YAML approach: one folder per environment, each containing a full copy of `deployment.yaml` and `service.yaml`. The differences between them are tiny — just a few fields like `replicas` and `image:tag` — but the **entire file** must be duplicated because YAML has no variable substitution. Notice there are no arrows inside this subgraph — each environment's files stand alone, with no shared source to keep them in sync. When you change a label across all environments, you edit three files. When the schema evolves, you edit three files. Drift is inevitable.
 
-The right side (green and blue boxes) shows the Helm approach. A single **chart** (blue) contains parameterised templates — the same `deployment.yaml` and `service.yaml`, but with placeholders like `{% raw %}{{ .Values.replicaCount }}{% endraw %}` instead of hard-coded numbers. Three small **values files** (green) supply just the differences for each environment. Updates to shared structure happen once, in the chart.
+The **"With Helm"** subgraph (green and blue boxes) shows the Helm approach. A single **chart** (blue) contains parameterised templates — the same `deployment.yaml` and `service.yaml`, but with placeholders like `{% raw %}{{ .Values.replicaCount }}{% endraw %}` instead of hard-coded numbers. Three small **values files** (green) supply just the differences for each environment. The three arrows from the values files into the chart represent each `helm install -f values-<env>.yaml` invocation feeding environment-specific overrides into the same shared chart at render time — Helm merges them over the chart's defaults to produce the final manifests. Updates to shared structure happen once, in the chart.
 
 The key insight: Helm splits **structure** (templates, shared across environments) from **configuration** (values, unique per environment). You stop duplicating YAML and start composing it.
 
@@ -156,18 +156,18 @@ flowchart TB
 
 **Reading this diagram:**
 
-Read top to bottom. At the top sits the chart root directory (blue), named after the chart itself — in our case `webapp/`. Inside, three top-level pieces matter most:
+Read top to bottom. At the top sits the chart root directory (blue), named after the chart itself — in our case `webapp/`. Inside, **four top-level items** hang off the root. Three of them carry the day-to-day work of authoring a chart; the fourth (`charts/`, faded grey) is reserved for sub-chart dependencies and stays empty for our simple chart.
+
+Note the colour convention used inside the grey boxes: **bright white text** marks files that produce real Kubernetes manifests applied to the cluster, while **muted grey text** marks supporting files that Helm reads but never applies directly.
 
 **`Chart.yaml`** (amber) holds chart metadata: a name, a chart version (the chart's own version), and an appVersion (the version of the app the chart deploys). Helm refuses to install a chart without this file.
 
 **`values.yaml`** (green) is the default configuration. Every parameter your templates reference must have a default here. At install time, callers can override individual values from the command line (`--set replicaCount=4`) or from a separate values file (`-f values-prod.yaml`).
 
-**`templates/`** (grey) is where the Kubernetes YAML lives, but written as Go templates with placeholders. Three children matter:
-- **`_helpers.tpl`** (lower-cased "underscore-prefixed" — Helm treats these as include-only, not as manifests to apply) holds shared snippets like the standard label block.
-- The actual manifest templates (`deployment.yaml`, `service.yaml`) get rendered with values substituted, then applied to the cluster.
-- **`NOTES.txt`** is a special template whose rendered output is printed to the user immediately after `helm install` — useful for connection instructions or next steps.
-
-The `charts/` directory (faded grey) holds sub-chart dependencies. It is empty for our simple chart.
+**`templates/`** (grey) is where the Kubernetes YAML lives, but written as Go templates with placeholders. Its four children fall into three roles:
+- **`_helpers.tpl`** (muted-grey text, matching `charts/` — the underscore prefix and muted colour both signal that Helm treats these as include-only, not as manifests to apply) holds shared snippets like the standard label block.
+- The actual manifest templates (`deployment.yaml` and `service.yaml`, bright-white text) get rendered with values substituted, then applied to the cluster.
+- **`NOTES.txt`** (bright-white text) is a special template whose rendered output is printed to the user immediately after `helm install` — useful for connection instructions or next steps.
 
 The key insight: Helm is a templating layer plus a release manager on top of standard Kubernetes manifests. Nothing in a rendered chart is exotic — it produces the same YAML you wrote by hand in Day 5.
 
@@ -704,9 +704,9 @@ flowchart TB
 
 Read top to bottom. The lifecycle of a Helm release flows through four commands:
 
-**`helm install`** (green) creates the release at revision 1 and applies all rendered manifests to the cluster. **`helm upgrade`** (blue) re-renders the chart with new values, applies the changes, and bumps the revision to 2. **`helm rollback ... 1`** (amber) does not delete revision 2 — it copies the spec from revision 1 into a brand-new revision 3 and re-applies it. **`helm uninstall`** (red) removes the release from the cluster entirely, deleting all the manifests it created.
+**`helm install`** (green) creates the release at revision 1 and applies all rendered manifests to the cluster. **`helm upgrade`** (blue) re-renders the chart with new values, applies the changes, and bumps the revision to 2. **`helm rollback ... 1`** (amber) does not delete revision 2 — it copies the spec from revision 1 into a brand-new revision 3 and re-applies it. **`helm uninstall`** (red) removes the release from the cluster entirely — deleting both the manifests it created **and** the revision Secrets in storage. Notice there is no dotted arrow from `uninstall` to the grey box: uninstall does not write a new revision, it erases the existing ones. Pass `--keep-history` to retain the Secrets so the release can later be recovered.
 
-Separately (grey box), each revision is persisted as a Kubernetes Secret in the release's namespace, with names like `sh.helm.release.v1.webapp-dev.v2`. The cluster itself stores the release history — Helm reads from these Secrets every time you run `helm history` or `helm rollback`. This is why you can switch laptops and still see the same release state: the source of truth lives in the cluster, not in your client.
+Off to the side (grey box, reached by **dotted** arrows — distinct from the **solid** command-flow arrows of the main lifecycle chain), each revision is persisted as a Kubernetes Secret in the release's namespace, with names like `sh.helm.release.v1.webapp-dev.v2`. Each dotted arrow's label maps a command to its written revision: install → v1, upgrade → v2, rollback → v3. The cluster itself stores the release history — Helm reads from these Secrets every time you run `helm history` or `helm rollback`. This is why you can switch laptops and still see the same release state: the source of truth lives in the cluster, not in your client.
 
 The key insight: a Helm release is more than just the manifests it applied — it is the **history of revisions**, persisted in-cluster. Rollback works because the previous revision's spec is still there to copy from.
 
