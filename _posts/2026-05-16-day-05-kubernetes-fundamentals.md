@@ -71,7 +71,7 @@ winget install -e --id Kubernetes.kind
 **Full environment check:**
 
 ```bash
-docker --version && kubectl version --client --short 2>/dev/null && kind --version
+docker --version && kubectl version --client && kind --version
 ```
 
 Expected output:
@@ -79,6 +79,7 @@ Expected output:
 ```text
 Docker version 26.1.4, build 5650f9b
 Client Version: v1.29.4
+Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 kind version 0.23.0
 ```
 
@@ -224,6 +225,8 @@ flowchart TB
     kubectl["kubectl\nyour terminal"] -->|"HTTPS REST"| API
     API -->|"watch and sync"| KB1
     API -->|"watch and sync"| KB2
+    API -->|"watch services"| KP1
+    API -->|"watch services"| KP2
 
     classDef control fill:#1a2744,stroke:#58a6ff,color:#e6edf3
     classDef worker fill:#1c2128,stroke:#30363d,color:#8b949e
@@ -233,13 +236,13 @@ flowchart TB
 
 **Reading this diagram:**
 
-The diagram splits into three areas: your terminal at the bottom, the control plane at the top, and two worker nodes in the middle.
+Read top to bottom. At the very top sits **kubectl** — your terminal, the only tool you use to talk to the cluster. It sends every command as an HTTPS REST call downward into the **Control Plane** (the middle block, blue nodes).
 
-Every `kubectl` command you run sends an HTTPS request to the **API Server** — the single front door to the entire cluster. The API Server reads and writes cluster state (what should exist) to **etcd**, a distributed key-value store that is the source of truth for everything. The **Scheduler** watches etcd for new pods with no assigned node and picks the best worker for them. The **Controller Manager** runs background loops that compare desired state (what you declared) to actual state (what's running) and reconciles differences — for example, if a pod crashes, the Deployment controller creates a replacement.
+Inside the Control Plane, the **API Server** is the single front door: everything passes through it. It reads and writes cluster state to **etcd** (a two-way arrow — it both stores and retrieves data), which is the source of truth for everything in the cluster. The **Scheduler** receives new pod assignments from the API Server and picks the best worker node for each pod. The **Controller Manager** runs background reconcile loops — if a pod crashes, the Deployment controller notices and creates a replacement.
 
-On each worker, **kubelet** watches the API Server for pods assigned to its node and instructs the **container runtime** (containerd) to pull images and start containers. **kube-proxy** maintains network rules so traffic destined for a Service reaches the right pods.
+Below the Control Plane sit the two **Worker Nodes**. On each one, **kubelet** watches the API Server for pods assigned to its node and instructs the **container runtime** (containerd) to pull images and start containers. **kube-proxy** also watches the API Server for Service and Endpoint changes and updates network routing rules so traffic reaches the right pods. The running **Pods** (green) are the final output of this whole chain.
 
-The key insight: you never talk directly to worker nodes. Everything goes through the API Server, and kubelet on each node independently pulls its instructions.
+The key insight: you never talk directly to a worker node. You talk to the API Server, and every component — kubelet, kube-proxy, the scheduler — independently watches the API Server and acts on what it finds there.
 
 ---
 
@@ -711,7 +714,7 @@ Read top to bottom. The diagram shows three phases of the rolling update.
 
 **Before** (amber/yellow pods): Three v1 pods are running and serving all traffic. This is the stable initial state.
 
-**During** (mixed colours): Kubernetes creates one new v2 pod first (green, bottom-right). It waits for this pod to pass its **readiness probe** before touching any v1 pod. Once the v2 pod is Ready and serving traffic, one v1 pod is marked **Terminating** (red, top-left) — Kubernetes stops sending it new traffic and allows in-flight requests to drain. At this moment there are still 3 pods actively serving traffic (2 v1 + 1 v2), satisfying `maxUnavailable: 0`. This same cycle repeats for the remaining two v1 pods.
+**During** (mixed colours): Kubernetes creates one new v2 pod first (green — **Pod 4 v2**). It waits for this pod to pass its **readiness probe** before touching any v1 pod. Once the v2 pod is Ready and serving traffic, one v1 pod is marked **Terminating** (red — **Pod 1 v1**) — Kubernetes stops sending it new traffic and allows in-flight requests to drain. At this moment there are still 3 pods actively serving traffic (2 v1 + 1 v2), satisfying `maxUnavailable: 0`. This same cycle repeats for the remaining two v1 pods.
 
 **After** (green pods): All three pods are now running v2. The old ReplicaSet still exists with zero replicas, ready to serve as the rollback target.
 
@@ -781,26 +784,23 @@ kind get clusters
 ### Error 3 — Port 30080 already in use
 
 ```text
-ERROR: failed to create cluster: failed to create kubeadm config:
-failed to get config: open /var/run/docker.sock: permission denied
-```
-
-Or when binding port:
-
-```text
 Bind for 0.0.0.0:30080 failed: port is already allocated
 ```
 
-**Cause:** Something else is already using port 30080 on your machine.
+**Cause:** Another process is already listening on port 30080 on your laptop.
 
 **Fix:**
 
 ```bash
-# Find what's using port 30080
+# Find which process is using port 30080
 lsof -i :30080
 
-# Kill the process or change nodePort in service.yaml and
-# containerPort/hostPort in kind-cluster.yaml to an unused port (e.g. 30081)
+# Kill that process, or use a different port throughout:
+# 1. Change nodePort in service.yaml from 30080 to 30081
+# 2. Change hostPort in kind-cluster.yaml from 30080 to 30081
+# Then delete and recreate the cluster
+kind delete cluster --name devops-cluster
+kind create cluster --name devops-cluster --config kind-cluster.yaml
 ```
 
 ---
