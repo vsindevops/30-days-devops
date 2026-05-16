@@ -146,7 +146,9 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io \
 # Add your user to the docker group (avoids sudo on every command)
 sudo usermod -aG docker $USER
 
-# Apply group membership without logout
+# Apply group membership to the current shell
+# (without this, `docker` commands fail with "permission denied"
+#  until you log out and back in — newgrp is preinstalled on every Ubuntu)
 newgrp docker
 
 # Verify installation
@@ -1249,6 +1251,10 @@ Error response from daemon: permission denied while trying to connect
 
 ```bash
 sudo usermod -aG docker $USER
+
+# Apply the new group to the current shell — newgrp is preinstalled on
+# every Ubuntu; without this step, your shell still uses its login-time
+# group list and `docker` keeps failing until you log out and back in.
 newgrp docker
 
 # Verify
