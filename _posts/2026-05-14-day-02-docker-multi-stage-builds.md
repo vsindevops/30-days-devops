@@ -23,7 +23,7 @@ A new developer joins your team. They clone the repo, follow the README, spend 3
 
 You've been there. You've been both people in that story.
 
-Docker was supposed to fix this. And it does — but only if you use it correctly. Most teams don't. They write a Dockerfile that works, ship it, and never look back. That Dockerfile ends up in production running as root, carrying 800 MB of build tools nobody needs, with 47 CVEs sitting quietly in a base image from 2021.
+Docker was supposed to fix this. And it does — but only if you use it correctly. Most teams don't. They write a Dockerfile that works, ship it, and never look back. That Dockerfile ends up in production running as root, carrying 800 MB of build tools nobody needs, with 47 CVEs (Common Vulnerabilities and Exposures — publicly tracked security flaws) sitting quietly in a base image from 2021.
 
 This article fixes that. You'll take a real Node.js application from a 1.2 GB naive image down to a 47 MB hardened production image. Every decision is explained. Every command is verified. By the end you'll have a Dockerfile template you can drop into any project and trust.
 
@@ -82,6 +82,12 @@ Start at the top — **"Your Node.js App"** is your source code (`src/`, `packag
 - **Stage 3 (test)** — installs all dependencies and runs your full test suite. This is a CI gate: if tests fail, the build stops here and nothing broken ever reaches production.
 - **Stage 4 (production)** — the only stage that ships. It starts from `distroless/nodejs20` (a ~28 MB base with no shell) and pulls in *only* the clean `node_modules` from Stage 1. No build tools, no dev dependencies, and no shell utilities from the earlier stages are carried over.
 
+> **Two terms used here that get full explanations later, but quick definitions up front:**
+> **Distroless** — a minimal base image that contains *only* the language runtime (Node.js) and the libraries it depends on. No shell, no package manager, no OS utilities. Smaller, fewer CVEs, and harder to exploit if an attacker breaks in. Published by Google to `gcr.io`.
+> **uid 65532** — distroless ships with a built-in unprivileged user at this conventional uid. Running as non-root means a container escape doesn't give an attacker host root.
+
+A note on the term **layer**: a Docker image is a stack of read-only filesystem layers — each instruction in the Dockerfile produces one layer (a diff against the previous one). Layers are content-addressed and cached: identical inputs produce identical layers, so unchanged steps are reused on rebuild. That cache behaviour is what makes the **order** of Dockerfile instructions matter so much.
+
 The end result is two images: **`myapp:dev`** for local development with hot reload, and **`myapp:production`** at 47 MB running as `uid 65532` with zero critical CVEs.
 
 ---
@@ -139,11 +145,23 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # Install Docker Engine, CLI, containerd, and plugins
+# - docker-ce: the daemon (dockerd) that runs containers
+# - docker-ce-cli: the `docker` command you type
+# - containerd.io: the lower-level container runtime dockerd talks to
+# - docker-buildx-plugin: enables `docker buildx` (BuildKit driver, multi-arch, cache mounts)
+# - docker-compose-plugin: enables `docker compose` (multi-container orchestration,
+#   used heavily in Day 3 to spin up Node.js + Postgres + Redis + Nginx as one stack)
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io \
   docker-buildx-plugin docker-compose-plugin
 
-# Add your user to the docker group (avoids sudo on every command)
+# Add your user to the docker group.
+# The Docker daemon's socket at /var/run/docker.sock is owned by root and
+# group-owned by `docker` (mode 660). Members of the `docker` group can
+# talk to the daemon directly — that's why you no longer need `sudo` on
+# every `docker` command after this step. Security note: docker-group
+# membership is effectively root-equivalent on the host (you can mount
+# the host filesystem into a container) — only grant it to trusted users.
 sudo usermod -aG docker $USER
 
 # Start the Docker daemon.
@@ -242,13 +260,17 @@ docker scout version
 #### 4. Node.js 20 LTS (for the sample application)
 
 ```bash
-# Install via nvm — avoids permission issues with global packages
+# Install Node.js via nvm.
+# nvm (Node Version Manager) is a shell script that installs Node releases
+# into your home directory (~/.nvm) instead of a system path. Two wins:
+# (1) global npm installs don't need sudo, (2) you can switch between
+# multiple Node versions per project with one command.
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 source ~/.bashrc
 
-nvm install 20
-nvm use 20
-nvm alias default 20
+nvm install 20          # download and install Node 20 LTS
+nvm use 20              # activate it in the current shell
+nvm alias default 20    # make it the default for new shells
 
 # Verify
 node --version   # v20.x.x
@@ -536,6 +558,12 @@ EOF
 Build it and inspect:
 
 ```bash
+# docker build flags decoded:
+#   -f Dockerfile.naive   pick a specific Dockerfile (default is ./Dockerfile)
+#   -t myapp:naive        tag the resulting image with name:tag
+#   .                     the build context — the directory whose contents
+#                         get tar'd up and sent to the Docker daemon.
+#                         Everything in .dockerignore is excluded.
 docker build -f Dockerfile.naive -t myapp:naive .
 ```
 
@@ -622,6 +650,14 @@ This is the critical insight: **you cannot shrink an image by deleting things**.
 
 Multi-stage builds use multiple `FROM` statements in one Dockerfile. Each stage builds on the previous. The final image receives only what you explicitly copy — build tools, test frameworks, and dev dependencies never make it in.
 
+A few Dockerfile concepts you'll see below for the first time:
+
+- **`FROM <image> AS <name>`** — the `AS <name>` clause names this stage so later stages can refer to it. That's how `COPY --from=deps /app/node_modules` in the production stage pulls files out of the `deps` stage without re-running it.
+- **`gcr.io/distroless/...`** — distroless images are published by Google to Google Container Registry (`gcr.io`), not Docker Hub. The `-debian12` suffix means the image's C library and CA certificates come from Debian 12 (bookworm) — distroless still needs *something* underneath the runtime, it just strips everything you don't actually need.
+- **`RUN --mount=type=cache,target=/root/.npm`** — a **BuildKit cache mount**: the npm package cache at `/root/.npm` is persisted between builds in BuildKit's own cache, not baked into the image. The first build downloads every dep; every subsequent build pulls tarballs from cache instantly. This is the BuildKit feature we set up Buildx for in the prerequisites.
+- **`EXPOSE <port>`** — pure metadata: it documents the port the container listens on so registries, orchestrators, and humans know how to reach the app. It does **not** publish the port — that still requires `-p 3000:3000` at run time. Common newcomer trap.
+- **`USER <name>`** — sets the uid that every subsequent `RUN`, `CMD`, and `ENTRYPOINT` runs as. Without `USER`, the container runs as root.
+
 ```bash
 cat > Dockerfile << 'EOF'
 # ─── Stage 1: deps ────────────────────────────────────────────────────────────
@@ -638,7 +674,11 @@ COPY package.json package-lock.json ./
 
 # npm ci: uses lockfile exactly, fails if lockfile is out of sync
 # --omit=dev: excludes devDependencies (nodemon, jest, etc.)
-RUN npm ci --omit=dev
+# --mount=type=cache: BuildKit cache mount on /root/.npm. The npm package
+# cache persists between builds, so package tarballs are downloaded once
+# and reused across every rebuild — even after `docker system prune -a`.
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev
 
 # ─── Stage 2: dev ─────────────────────────────────────────────────────────────
 # All dependencies including devDependencies (nodemon, jest, etc.).
@@ -649,7 +689,8 @@ FROM node:20-alpine AS dev
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 # ─── Stage 3: test ────────────────────────────────────────────────────────────
 # Runs tests with all dependencies (including dev).
@@ -659,7 +700,8 @@ FROM node:20-alpine AS test
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 COPY . .
 
@@ -670,7 +712,9 @@ RUN npm run test:ci --if-present
 # no system utilities. The absolute minimum to run a Node.js process.
 FROM gcr.io/distroless/nodejs20-debian12 AS production
 
-# OCI image labels — document the image for registries and scanners
+# OCI (Open Container Initiative) image labels — a standardised label
+# namespace that registries, scanners, and tools read for provenance and
+# discovery. Adding these costs nothing and is a free SEO/auditability win.
 LABEL org.opencontainers.image.title="myapp"
 LABEL org.opencontainers.image.description="Node.js REST API — 30 Days of DevOps"
 LABEL org.opencontainers.image.source="https://github.com/syssignals/30-days-devops"
@@ -690,10 +734,14 @@ COPY package.json ./
 # Declaring it explicitly satisfies security scanners and makes intent clear.
 USER nonroot
 
+# Metadata only — documents that this container listens on 3000.
+# Doesn't actually open the port; that still requires `-p 3000:3000` at run time.
 EXPOSE 3000
 
 # Exec form (array) is required in distroless — there is no shell to interpret
-# the shell form. It also makes node PID 1, so SIGTERM reaches it directly.
+# the shell form. /nodejs/bin/node is the absolute path because distroless has
+# no PATH-friendly shell to resolve `node` on its own. Exec form also makes
+# node PID 1, so SIGTERM from `docker stop` reaches it directly.
 CMD ["/nodejs/bin/node", "src/index.js"]
 EOF
 ```
@@ -701,6 +749,11 @@ EOF
 Build and measure:
 
 ```bash
+# --target production: stop at the `production` stage. Other stages (deps,
+# dev, test) only run if `production` depends on them via COPY --from=...
+# This is what makes multi-stage builds efficient — unrelated stages skip.
+# DOCKER_BUILDKIT=1: belt-and-suspenders enabling BuildKit even if the
+# active buildx context were reset. Harmless when buildx is already default.
 DOCKER_BUILDKIT=1 docker build \
   --target production \
   --tag myapp:production \
@@ -901,12 +954,31 @@ services:
     ports:
       - "3000:3000"
     volumes:
+      # ./src:/app/src:ro  — bind mount with the :ro (read-only) suffix.
+      # Your source code on the host is mapped into the container, but
+      # the container cannot write back. Hot reload still works (the file
+      # WATCH is on the host side), but a compromised container can't
+      # modify your code.
       - ./src:/app/src:ro
+      # node_modules:/app/node_modules  — named volume (no ./ prefix).
+      # Compose syntax: paths starting with ./ or / are bind mounts;
+      # bare names refer to named volumes declared in the volumes: section
+      # at the bottom of the file. We keep node_modules in a named volume
+      # so the Alpine-compiled native modules built INSIDE the container
+      # are not clobbered by the macOS/Linux-compiled ones on your host.
       - node_modules:/app/node_modules
     environment:
       NODE_ENV: development
       PORT: 3000
     command: ["node_modules/.bin/nodemon", "--watch", "src", "src/index.js"]
+    # healthcheck — Docker runs this command inside the container on a
+    # schedule. After enough consecutive failures the container is marked
+    # `unhealthy`, which orchestrators (Compose, Swarm, Kubernetes equiv)
+    # use to gate traffic and trigger restarts. Fields:
+    #   interval     time between checks
+    #   timeout      how long the check itself can take before failing
+    #   retries      consecutive failures before marking unhealthy
+    #   start_period grace window during boot — failures here don't count
     healthcheck:
       test:
         - CMD
@@ -941,14 +1013,38 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+    # read_only: true — make the container's root filesystem read-only.
+    # The app cannot create or modify any file outside declared tmpfs and
+    # volume mounts. Defeats a huge class of post-exploit techniques that
+    # drop a malicious binary or modify config on disk.
     read_only: true
+    # tmpfs: - /tmp — mount a RAM-backed temporary filesystem at /tmp.
+    # Needed because read_only: true would otherwise block libraries that
+    # legitimately need scratch space. tmpfs disappears on container exit
+    # (no persistence) so it never accumulates state.
     tmpfs:
       - /tmp
+    # security_opt: no-new-privileges:true — sets the kernel's
+    # no_new_privs bit, which blocks setuid binaries inside the container
+    # from escalating privileges (no setuid root). Defense-in-depth even
+    # if the image accidentally includes a setuid binary.
     security_opt:
       - no-new-privileges:true
+    # cap_drop: ALL — remove every Linux capability from the container.
+    # Capabilities are fine-grained slices of root power (NET_ADMIN,
+    # SYS_PTRACE, CHOWN, ...). Dropping them all leaves the process with
+    # only what a regular unprivileged user gets. Add back what's needed
+    # via `cap_add:` — a Node web server needs nothing.
     cap_drop:
       - ALL
     deploy:
+      # limits  = hard caps. Kernel will throttle CPU and OOM-kill the
+      #           container if it goes over memory.
+      # reservations = soft floor. Scheduler tries to keep these resources
+      #                available to the container.
+      # Note: under plain `docker compose up` (no Swarm) the deploy block
+      # is honoured for resource limits by the modern Compose plugin,
+      # but ignored by some older docker-compose binaries. Test if unsure.
       resources:
         limits:
           cpus: '0.50'
