@@ -31,6 +31,7 @@ search_full_content: true
 markdown: kramdown
 highlighter: rouge
 permalink: /articles/:year/:month/:day/:title/
+future: true  # publish posts dated in the future (we write one day ahead)
 
 kramdown:
   input: GFM
