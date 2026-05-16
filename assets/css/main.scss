@@ -675,6 +675,38 @@ p code, li code, td code {
   margin: 2.5em 0;
 }
 
+/* --- Back to top button --------------------------------------------- */
+#back-to-top {
+  position: fixed;
+  bottom: 2em;
+  right: 2em;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s, border-color 0.15s, color 0.15s;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+#back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+#back-to-top:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* --- Code language label -------------------------------------------- */
 .code-lang {
   position: absolute;
