@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-label="syssignals icon">
+  <!-- Chip badge -->
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <!-- ECG signal pulse (simplified for small size) -->
+  <polyline
+    points="4,16 9,16 12,8 16,24 19,16 28,16"
+    stroke="#58a6ff"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>
