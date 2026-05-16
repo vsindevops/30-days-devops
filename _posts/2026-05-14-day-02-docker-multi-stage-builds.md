@@ -146,14 +146,25 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io \
 # Add your user to the docker group (avoids sudo on every command)
 sudo usermod -aG docker $USER
 
+# Start the Docker daemon.
+# On full Ubuntu installs the apt post-install hook auto-starts and
+# enables the service, so this is usually a no-op. On lab environments
+# (KillerCoda, Instruqt, slim containers) and some VPS images the daemon
+# is NOT auto-started — the socket /var/run/docker.sock won't exist
+# until you run this. Tested on systemd-based Ubuntu 22.04 / 24.04.
+sudo systemctl start docker
+sudo systemctl enable docker   # auto-start on boot
+
+# Non-systemd hosts: use one of these instead
+#   sudo service docker start          # SysV init
+#   sudo dockerd > /tmp/dockerd.log 2>&1 &   # last resort, run daemon manually
+
 # Pick up the new group membership. Your current shell still uses the
 # group list it loaded at login, so docker commands would fail with
 # "permission denied" until you do one of:
 #   - Close this terminal and open a new one (simplest, works everywhere)
 #   - Log out and log back in (for SSH sessions)
 #   - Reboot
-# After that, the new shell will see the docker group and the command
-# below will succeed without sudo.
 
 # Verify installation (run this in a NEW terminal after the steps above)
 docker run --rm hello-world
@@ -1265,6 +1276,40 @@ groups | grep docker
 
 # Test
 docker scout version
+```
+
+---
+
+### Error 7: `Cannot connect to the Docker daemon` — socket not found
+
+```
+failed to connect to the docker API at unix:///var/run/docker.sock;
+check if the path is correct and if the daemon is running:
+dial unix /var/run/docker.sock: connect: no such file or directory
+```
+
+**Cause:** The Docker daemon is not running, so the Unix socket the CLI tries to connect to doesn't exist. On full Ubuntu installs this is auto-started by the apt post-install hook, but on lab environments (KillerCoda, Instruqt, slim Docker base images) and some VPS images the daemon isn't started by default.
+
+> This was hit on a real KillerCoda-style lab environment. Tested fix on systemd-based Ubuntu — `sudo systemctl start docker` is enough.
+
+**Fix:**
+
+```bash
+# Systemd hosts (Ubuntu 22.04, 24.04 desktop/server, most cloud VMs)
+sudo systemctl start docker
+sudo systemctl enable docker   # so it auto-starts on next boot
+
+# Non-systemd / SysV-init hosts
+sudo service docker start
+
+# Last resort if neither init system is present (some containers)
+sudo dockerd > /tmp/dockerd.log 2>&1 &
+
+# Wait 3-5 seconds, then verify the socket exists
+ls -l /var/run/docker.sock
+
+# Retry
+docker run --rm hello-world
 ```
 
 ---
