@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500" width="1500" height="500" role="img" aria-label="syssignals Twitter banner">
+  <defs>
+    <!-- Soft glow for the signal line -->
+    <filter id="glow" x="-30%" y="-50%" width="160%" height="200%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Strong glow for spike tip -->
+    <filter id="glow-strong" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1500" height="500" fill="#0d1117"/>
+
+  <!-- Subtle dot grid -->
+  <g fill="#21262d" opacity="0.6">
+    <circle cx="100" cy="100" r="1.2"/><circle cx="200" cy="100" r="1.2"/><circle cx="300" cy="100" r="1.2"/>
+    <circle cx="400" cy="100" r="1.2"/><circle cx="500" cy="100" r="1.2"/><circle cx="600" cy="100" r="1.2"/>
+    <circle cx="700" cy="100" r="1.2"/><circle cx="800" cy="100" r="1.2"/><circle cx="900" cy="100" r="1.2"/>
+    <circle cx="1000" cy="100" r="1.2"/><circle cx="1100" cy="100" r="1.2"/><circle cx="1200" cy="100" r="1.2"/>
+    <circle cx="1300" cy="100" r="1.2"/><circle cx="1400" cy="100" r="1.2"/>
+    <circle cx="100" cy="200" r="1.2"/><circle cx="200" cy="200" r="1.2"/><circle cx="300" cy="200" r="1.2"/>
+    <circle cx="400" cy="200" r="1.2"/><circle cx="500" cy="200" r="1.2"/><circle cx="600" cy="200" r="1.2"/>
+    <circle cx="700" cy="200" r="1.2"/><circle cx="800" cy="200" r="1.2"/><circle cx="900" cy="200" r="1.2"/>
+    <circle cx="1000" cy="200" r="1.2"/><circle cx="1100" cy="200" r="1.2"/><circle cx="1200" cy="200" r="1.2"/>
+    <circle cx="1300" cy="200" r="1.2"/><circle cx="1400" cy="200" r="1.2"/>
+    <circle cx="100" cy="300" r="1.2"/><circle cx="200" cy="300" r="1.2"/><circle cx="300" cy="300" r="1.2"/>
+    <circle cx="400" cy="300" r="1.2"/><circle cx="500" cy="300" r="1.2"/><circle cx="600" cy="300" r="1.2"/>
+    <circle cx="700" cy="300" r="1.2"/><circle cx="800" cy="300" r="1.2"/><circle cx="900" cy="300" r="1.2"/>
+    <circle cx="1000" cy="300" r="1.2"/><circle cx="1100" cy="300" r="1.2"/><circle cx="1200" cy="300" r="1.2"/>
+    <circle cx="1300" cy="300" r="1.2"/><circle cx="1400" cy="300" r="1.2"/>
+    <circle cx="100" cy="400" r="1.2"/><circle cx="200" cy="400" r="1.2"/><circle cx="300" cy="400" r="1.2"/>
+    <circle cx="400" cy="400" r="1.2"/><circle cx="500" cy="400" r="1.2"/><circle cx="600" cy="400" r="1.2"/>
+    <circle cx="700" cy="400" r="1.2"/><circle cx="800" cy="400" r="1.2"/><circle cx="900" cy="400" r="1.2"/>
+    <circle cx="1000" cy="400" r="1.2"/><circle cx="1100" cy="400" r="1.2"/><circle cx="1200" cy="400" r="1.2"/>
+    <circle cx="1300" cy="400" r="1.2"/><circle cx="1400" cy="400" r="1.2"/>
+  </g>
+
+  <!-- Signal: faded tail from right (the line continues past the spike) -->
+  <line x1="420" y1="250" x2="1500" y2="250" stroke="#58a6ff" stroke-width="1.5" opacity="0.07"/>
+
+  <!-- Signal: wide outer glow -->
+  <polyline
+    points="0,250 220,250 260,250 295,52 348,448 385,250 420,250"
+    stroke="#58a6ff" stroke-width="24" fill="none" opacity="0.07"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Signal: mid glow -->
+  <polyline
+    points="0,250 220,250 260,250 295,52 348,448 385,250 420,250"
+    stroke="#58a6ff" stroke-width="10" fill="none" opacity="0.18"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Signal: sharp line -->
+  <polyline
+    points="0,250 220,250 260,250 295,52 348,448 385,250 420,250"
+    stroke="#58a6ff" stroke-width="2.5" fill="none" opacity="1"
+    stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Spike tip — glowing dot at the peak -->
+  <circle cx="295" cy="52" r="4" fill="#58a6ff" filter="url(#glow-strong)"/>
+  <circle cx="295" cy="52" r="2" fill="#ffffff"/>
+
+  <!-- Chip icon mark (ties back to logo) -->
+  <rect x="510" y="192" width="68" height="68" rx="14" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <polyline
+    points="520,226 532,226 537,210 542,242 547,226 572,226"
+    stroke="#58a6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Wordmark -->
+  <text
+    x="596"
+    y="248"
+    font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"
+    font-size="80"
+    font-weight="700"
+    letter-spacing="-2.5">
+    <tspan fill="#58a6ff">sys</tspan><tspan fill="#e6edf3">signals</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text
+    x="600"
+    y="302"
+    font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"
+    font-size="19"
+    font-weight="400"
+    fill="#8b949e"
+    letter-spacing="4.5">DEVOPS · MLOPS · SECURITY</text>
+
+  <!-- URL — bottom right, very subtle -->
+  <text
+    x="1462"
+    y="474"
+    font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"
+    font-size="15"
+    font-weight="400"
+    fill="#30363d"
+    text-anchor="end"
+    letter-spacing="0.5">syssignals.com</text>
+</svg>
