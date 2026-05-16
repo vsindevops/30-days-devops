@@ -7,6 +7,7 @@ excerpt: "Build a production-realistic local dev environment: Node.js REST API b
 header:
   overlay_color: "#0d1117"
   overlay_filter: 0.6
+  og_image: "https://res.cloudinary.com/dbax697uu/image/upload/w_1200,h_630,l_text:Arial_28:30%20Days%20of%20DevOps,co_rgb:58a6ff,g_north_west,x_80,y_180,l_text:Arial_64_bold:Day%203%3A%20Docker%20Compose%20for%20a%20Full%20Local%20Dev%20Stack%20%E2%80%94%20Node.js%2C%20PostgreSQL%2C%20Redis%2C%20and%20Nginx,co_rgb:e6edf3,g_north_west,x_80,y_230,w_1060,c_fit/og_base.png"
 author_profile: false
 read_time: true
 toc: true
