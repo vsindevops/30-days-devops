@@ -675,6 +675,26 @@ p code, li code, td code {
   margin: 2.5em 0;
 }
 
+/* --- Code language label -------------------------------------------- */
+.code-lang {
+  position: absolute;
+  top: 0.55em;
+  left: 0.75em;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Push code down when label is present so text doesn't overlap */
+div.highlight.has-lang-label pre {
+  padding-top: 2em !important;
+}
+
 /* --- Reading progress bar ------------------------------------------- */
 #reading-progress {
   position: fixed;

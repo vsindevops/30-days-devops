@@ -145,10 +145,39 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 2000);
   }
 
+  var LANG_NAMES = {
+    'bash': 'Bash', 'sh': 'Shell', 'shell': 'Shell',
+    'javascript': 'JS', 'typescript': 'TS',
+    'python': 'Python', 'ruby': 'Ruby', 'go': 'Go', 'rust': 'Rust',
+    'yaml': 'YAML', 'json': 'JSON', 'toml': 'TOML', 'ini': 'INI',
+    'html': 'HTML', 'css': 'CSS', 'scss': 'SCSS', 'sql': 'SQL',
+    'dockerfile': 'Dockerfile', 'nginx': 'Nginx', 'hcl': 'HCL',
+    'diff': 'Diff', 'makefile': 'Makefile', 'xml': 'XML',
+  };
+
   document.querySelectorAll('div.highlight').forEach(function (block) {
     // Skip Mermaid diagram blocks (no pre inside after conversion)
     var pre = block.querySelector('pre');
     if (!pre) return;
+
+    // Language label — read Rouge class from the <code> element
+    var code = pre.querySelector('code');
+    if (code) {
+      var match = Array.from(code.classList).find(function (c) {
+        return c.startsWith('language-');
+      });
+      if (match) {
+        var lang = match.replace('language-', '');
+        var skip = ['plaintext', 'text', 'console', 'mermaid'];
+        if (!skip.includes(lang)) {
+          var label = document.createElement('span');
+          label.className = 'code-lang';
+          label.textContent = LANG_NAMES[lang] || lang.toUpperCase();
+          block.appendChild(label);
+          block.classList.add('has-lang-label');
+        }
+      }
+    }
 
     var btn = document.createElement('button');
     btn.className = 'copy-btn';
