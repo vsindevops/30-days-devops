@@ -677,3 +677,10 @@ p code, li code, td code {
 
 /* --- Selection highlight -------------------------------------------- */
 ::selection { background: rgba(88, 166, 255, 0.25); color: var(--text-primary); }
+
+/* --- GoatCounter page view chip ------------------------------------- */
+.gc-views {
+  font-size: 0.78em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
