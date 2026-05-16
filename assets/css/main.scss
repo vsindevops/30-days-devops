@@ -675,6 +675,18 @@ p code, li code, td code {
   margin: 2.5em 0;
 }
 
+/* --- Reading progress bar ------------------------------------------- */
+#reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: var(--accent);
+  z-index: 9999;
+  transition: width 0.1s linear;
+}
+
 /* --- Selection highlight -------------------------------------------- */
 ::selection { background: rgba(88, 166, 255, 0.25); color: var(--text-primary); }
 

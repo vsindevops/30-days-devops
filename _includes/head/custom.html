@@ -1,3 +1,20 @@
+<!-- Reading progress bar — article pages only -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (!document.body.classList.contains('layout--single')) return;
+
+  var bar = document.createElement('div');
+  bar.id = 'reading-progress';
+  document.body.prepend(bar);
+
+  window.addEventListener('scroll', function () {
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var progress = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+    bar.style.width = progress + '%';
+  }, { passive: true });
+});
+</script>
+
 <!-- GoatCounter: tracking (async — non-blocking) -->
 <script
   data-goatcounter="https://syssignals.goatcounter.com/count"
