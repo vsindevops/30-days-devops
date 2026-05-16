@@ -18,6 +18,10 @@ author:
       icon: "fab fa-fw fa-x-twitter"
       url: "https://x.com/syssignals"
 
+# Comments (Giscus — GitHub Discussions)
+comments:
+  provider: custom
+
 # Search
 search: true
 search_full_content: true
@@ -59,7 +63,7 @@ defaults:
       layout: single
       author_profile: false
       read_time: true
-      comments: false
+      comments: true
       share: true
       related: false
       toc: true
