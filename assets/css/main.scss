@@ -67,8 +67,9 @@ a:hover { color: #79b8ff; text-decoration: none; }
 
 /* Logo image sizing in masthead */
 .site-logo img {
-  max-height: 38px !important;
-  width: auto;
+  height: 36px !important;
+  width: auto !important;
+  display: block !important;
 }
 
 /* Remove the default gap MM adds when no text title is present */

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 56" fill="none" role="img" aria-label="syssignals logo">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 56" width="248" height="56" fill="none" role="img" aria-label="syssignals logo">
   <!-- Icon mark: chip / system badge -->
   <rect x="4" y="4" width="48" height="48" rx="10" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
   <!-- ECG signal pulse -->
