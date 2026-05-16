@@ -177,28 +177,62 @@ Hello from Docker!
 
 #### 2. Docker Buildx (for BuildKit cache mounts)
 
+Before running any commands, understand what you're enabling and why.
+
+**What is BuildKit?**
+BuildKit is the modern build backend that ships with Docker Engine. It replaces the legacy `docker build` engine and adds three things this article relies on heavily:
+
+- **`--mount=type=cache`** — persist `npm` / `apt` / `pip` cache across builds. Without it, every build re-downloads every package.
+- **Parallel stage execution** — independent stages of a multi-stage build run concurrently instead of serially.
+- **Build secrets via `--secret`** — pass credentials at build time without baking them into image layers.
+
+The legacy builder cannot do any of these. On most Docker installs BuildKit is *available* but not the default driver — you have to opt in.
+
+**What is Buildx?**
+Buildx is the CLI plugin that drives BuildKit. It also manages **builder instances** — isolated build environments, each with their own BuildKit daemon. By creating our own named builder and setting it as the default, every subsequent `docker build` automatically uses BuildKit features without any extra flags.
+
+**Commands:**
+
 ```bash
-# Verify Buildx is available
+# 1. Confirm Buildx CLI plugin is installed
+#    (it ships with Docker Engine 23.0+ — the apt install above brought it in)
 docker buildx version
 # Expected: github.com/docker/buildx v0.12.x linux/amd64
 
-# Enable BuildKit globally (set as default builder)
+# 2. Create a new BuildKit builder instance named "mybuilder"
+#    The --use flag immediately sets it as the active builder for all
+#    future `docker build` commands in this Docker context.
 docker buildx create --name mybuilder --use
+
+# 3. Boot the builder so it's ready for the first real build
+#    Without --bootstrap, the builder is lazily started on first use,
+#    which adds ~5-10 seconds of cold-start to the first build.
+#    --bootstrap runs an empty build to warm it up now.
 docker buildx inspect --bootstrap
 ```
 
-Expected output (last line):
+Expected output (last line of `--bootstrap`):
 ```
 [+] Building 4.2s (1/1) FINISHED
 ```
 
+From this point on, every `docker build` in this terminal automatically uses BuildKit. You'll see `[+] Building` in the output instead of the old line-by-line `Step 1/N : ...` format — that's the visual confirmation BuildKit is doing the work.
+
 #### 3. Docker Scout (for vulnerability scanning)
 
+**What is Docker Scout?**
+Docker Scout is a CLI plugin that scans your container images for known CVEs (Common Vulnerabilities and Exposures) — every dependency in every layer is checked against vulnerability databases. We use it in this article to prove our final image is free of high/critical vulnerabilities, and to compare a "bad" image (uses `latest` tags) against our hardened version.
+
+It's a free plugin from Docker but not bundled with Docker Engine — you install it separately:
+
 ```bash
-# Install Docker Scout CLI plugin
+# Install the Docker Scout CLI plugin
+# This script downloads the binary and drops it into ~/.docker/cli-plugins/,
+# where Docker CLI auto-discovers subcommands. After this, `docker scout`
+# becomes available as a regular Docker subcommand.
 curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
 
-# Verify
+# Verify the plugin was installed and Docker can find it
 docker scout version
 # Expected: docker scout version v1.x.x
 ```
