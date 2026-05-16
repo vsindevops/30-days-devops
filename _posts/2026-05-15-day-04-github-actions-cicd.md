@@ -7,7 +7,6 @@ excerpt: "Ship a 3-job GitHub Actions pipeline that tests your Docker image, blo
 header:
   overlay_color: "#0d1117"
   overlay_filter: 0.6
-  og_image: "https://res.cloudinary.com/dbax697uu/image/upload/w_1200,h_630,l_text:Arial_28:30%20Days%20of%20DevOps,co_rgb:58a6ff,g_north_west,x_80,y_180,l_text:Arial_64_bold:Day%204%3A%20GitHub%20Actions%20CI%2FCD%20%E2%80%94%20Automated%20Build%2C%20Test%2C%20Scan%2C%20and%20Push%20on%20Every%20Commit,co_rgb:e6edf3,g_north_west,x_80,y_230,w_1060,c_fit/og_base.png"
 author_profile: false
 read_time: true
 toc: true

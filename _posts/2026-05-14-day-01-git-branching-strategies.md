@@ -7,7 +7,6 @@ excerpt: "Two battle-tested branching strategies with complete setup, real confi
 header:
   overlay_color: "#1a1a2e"
   overlay_filter: 0.6
-  og_image: "https://res.cloudinary.com/dbax697uu/image/upload/w_1200,h_630,l_text:Arial_28:30%20Days%20of%20DevOps,co_rgb:58a6ff,g_north_west,x_80,y_180,l_text:Arial_64_bold:Day%201%3A%20Git%20Branching%20Strategies%20for%20DevOps%20Teams%20%E2%80%94%20GitFlow%20vs%20Trunk-Based%20Development,co_rgb:e6edf3,g_north_west,x_80,y_230,w_1060,c_fit/og_base.png"
 author_profile: true
 read_time: true
 toc: true
