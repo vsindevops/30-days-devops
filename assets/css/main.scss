@@ -60,11 +60,20 @@ a:hover { color: #79b8ff; text-decoration: none; }
 
 .greedy-nav { background: transparent !important; }
 
+/* Hide the text title — the SVG logo already contains the wordmark */
 .site-title {
-  font-weight: 700 !important;
-  font-size: 1.05em !important;
-  letter-spacing: -0.02em;
-  color: var(--text-primary) !important;
+  display: none !important;
+}
+
+/* Logo image sizing in masthead */
+.site-logo img {
+  max-height: 38px !important;
+  width: auto;
+}
+
+/* Remove the default gap MM adds when no text title is present */
+.site-logo {
+  margin-right: 0 !important;
 }
 
 .site-subtitle {
