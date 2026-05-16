@@ -150,8 +150,94 @@ document.addEventListener('DOMContentLoaded', function () {
       code.parentElement.replaceWith(div);
     });
 
-    mermaid.run();
+    // Chain: render Mermaid first (so SVGs size correctly while their
+    // containers are still visible), then wrap each "Part N — ..." H2
+    // section in a collapsible <details> element.
+    mermaid.run().then(wrapArticlePartsInCollapsibles)
+                 .catch(wrapArticlePartsInCollapsibles); // wrap even if Mermaid fails
   });
+
+  function wrapArticlePartsInCollapsibles() {
+    var article = document.querySelector('.page__content');
+    if (!article) return;
+
+    var h2s = Array.from(article.querySelectorAll('h2'));
+    var partH2s = h2s.filter(function (h) {
+      return /^\s*Part\s+\d+/i.test(h.textContent.trim());
+    });
+    if (partH2s.length === 0) return;
+
+    var detailsElements = [];
+
+    partH2s.forEach(function (h2, idx) {
+      // Collect all siblings until the next H2 (or end of parent)
+      var content = [];
+      var next = h2.nextElementSibling;
+      while (next && next.tagName !== 'H2') {
+        var sib = next.nextElementSibling;
+        content.push(next);
+        next = sib;
+      }
+
+      // Build the <details> wrapper
+      var details = document.createElement('details');
+      details.className = 'part-collapse';
+
+      // Preserve the H2's anchor id on the details element so deep links work
+      if (h2.id) {
+        details.id = h2.id;
+        h2.removeAttribute('id');
+      }
+
+      // <summary> contains the H2 (kept for semantics/TOC) + chevron
+      var summary = document.createElement('summary');
+      summary.className = 'part-summary';
+
+      var chevron = document.createElement('span');
+      chevron.className = 'part-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      chevron.textContent = '▾'; // ▾
+
+      // h2.cloneNode(true) — copy the original H2 inside summary
+      summary.appendChild(h2.cloneNode(true));
+      summary.appendChild(chevron);
+
+      details.appendChild(summary);
+      content.forEach(function (el) { details.appendChild(el); });
+
+      // Swap original H2 with the new <details> in the DOM
+      h2.parentNode.insertBefore(details, h2);
+      h2.parentNode.removeChild(h2);
+
+      // First Part open by default — immediate content visible on page load
+      if (idx === 0) details.open = true;
+
+      detailsElements.push(details);
+    });
+
+    // Accordion behaviour: opening one Part closes all the others
+    detailsElements.forEach(function (d) {
+      d.addEventListener('toggle', function () {
+        if (d.open) {
+          detailsElements.forEach(function (other) {
+            if (other !== d) other.open = false;
+          });
+        }
+      });
+    });
+
+    // Deep-link handling: if the URL hash matches a Part id, open that one
+    if (window.location.hash) {
+      var id = window.location.hash.slice(1);
+      var target = document.getElementById(id);
+      if (target && target.classList.contains('part-collapse')) {
+        detailsElements.forEach(function (d) { d.open = (d === target); });
+        setTimeout(function () {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+      }
+    }
+  }
 </script>
 
 <script>

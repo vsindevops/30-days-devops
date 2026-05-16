@@ -842,3 +842,110 @@ div.highlight.has-lang-label pre {
   color: var(--text-secondary);
   white-space: nowrap;
 }
+
+/* =====================================================================
+   Collapsible Part sections — keeps the reader focused on one step
+   ===================================================================== */
+
+.part-collapse {
+  margin: 2.2em 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  scroll-margin-top: 80px; /* keep below sticky masthead when anchored */
+}
+
+.part-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85em 1.2em;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-tertiary);
+  transition: background 0.15s ease;
+  list-style: none;
+  position: relative;
+}
+
+/* Hide the default disclosure marker across browsers */
+.part-summary::-webkit-details-marker { display: none; }
+.part-summary::marker { display: none; }
+
+.part-summary:hover {
+  background: rgba(88, 166, 255, 0.06);
+}
+
+.part-summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* The H2 inside summary keeps its semantics but loses the bottom border
+   and outer margins — the <details> container provides spacing instead. */
+.part-summary h2 {
+  margin: 0 !important;
+  padding: 0 !important;
+  border-bottom: none !important;
+  font-size: 1.25rem !important;
+  flex: 1;
+}
+
+.part-chevron {
+  font-size: 1.1rem;
+  color: var(--accent);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  font-family: monospace;
+  line-height: 1;
+}
+
+.part-collapse[open] > .part-summary .part-chevron {
+  transform: rotate(180deg);
+}
+
+.part-collapse[open] > .part-summary {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Inner content padding */
+.part-collapse > *:not(.part-summary) {
+  margin-left: 1.2em;
+  margin-right: 1.2em;
+}
+.part-collapse > *:not(.part-summary):first-of-type {
+  margin-top: 1em;
+}
+.part-collapse > *:not(.part-summary):last-child {
+  margin-bottom: 1em;
+}
+
+/* When printing, expand every Part and remove the visual chrome */
+@media print {
+  .part-collapse {
+    border: none;
+    background: transparent;
+    margin: 1em 0;
+  }
+  .part-collapse > *:not(.part-summary) {
+    display: block !important;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .part-chevron { display: none; }
+  .part-summary { background: transparent; padding: 0; }
+  .part-summary h2 { border-bottom: 1px solid #ccc !important; padding-bottom: 0.3em !important; }
+}
+
+/* Small screens — slightly tighter padding */
+@media (max-width: 600px) {
+  .part-collapse > *:not(.part-summary) {
+    margin-left: 0.8em;
+    margin-right: 0.8em;
+  }
+  .part-summary {
+    padding: 0.7em 0.9em;
+  }
+}
