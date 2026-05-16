@@ -1,3 +1,30 @@
+<!-- Series progress indicator -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var match = window.location.pathname.match(/\/day-0*(\d+)-/i);
+  if (!match) return;
+
+  var day   = parseInt(match[1], 10);
+  var total = 30;
+  var pct   = Math.round((day / total) * 100);
+
+  var banner = document.createElement('div');
+  banner.className = 'series-progress';
+  banner.innerHTML =
+    '<div class="sp-left">' +
+      '<span class="sp-series">30 Days of DevOps</span>' +
+      '<span class="sp-day">Day ' + day + ' of ' + total + '</span>' +
+    '</div>' +
+    '<div class="sp-bar-wrap">' +
+      '<div class="sp-bar" style="width:' + pct + '%"></div>' +
+    '</div>' +
+    '<span class="sp-pct">' + pct + '%</span>';
+
+  var content = document.querySelector('article.page .page__content');
+  if (content) content.parentNode.insertBefore(banner, content);
+});
+</script>
+
 <!-- Back to top button -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {

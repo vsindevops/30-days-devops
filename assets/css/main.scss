@@ -675,6 +675,70 @@ p code, li code, td code {
   margin: 2.5em 0;
 }
 
+/* --- Series progress indicator -------------------------------------- */
+.series-progress {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65em 1em;
+  margin-bottom: 2em;
+  flex-wrap: wrap;
+}
+
+.sp-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  flex-shrink: 0;
+}
+
+.sp-series {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.sp-series::after {
+  content: '·';
+  margin-left: 0.6em;
+  color: var(--border);
+}
+
+.sp-day {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.sp-bar-wrap {
+  flex: 1 1 120px;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.sp-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.sp-pct {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  min-width: 2.5em;
+  text-align: right;
+}
+
 /* --- Back to top button --------------------------------------------- */
 #back-to-top {
   position: fixed;
